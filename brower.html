@@ -1,55 +1,66 @@
 <html>
-<head>
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-  <style type="text/css">
-  <!--
-  BODY {
-    margin: 0;
-    padding: 0px 0px 0px 300px ; /* 左側の横サイズを 150 ピクセルとします */
-    background-color : #000000;
-  }
-  * html body{
-    overflow: auto;
-  } 
-  div {
-    font-size: 14px;
-  }
-  div#Left_area {
-    padding : 10px;
-    position: fixed !important;
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 280px; /* BODY で設定した150ピクセルの値をセットします　*/
-    height: 100%;
-    /*background-color : #aaff66 ;*/
-    overflow: auto; /* メニュー等の行が多い場合はスクロールバーを表示する */
-  }
-  div#Right_area{
-    padding : 10px;
-    background-color : #000000;
-    color : #ffffff;
-  }
-  * html div#Right_area{
-    height: 100%;
-    overflow: auto;
-  }
 
-  a {
-    color: #428bca;
-    text-decoration: none;
-  }
-  a:hover,
-  a:focus {
-    color: #2a6496;
-    text-decoration: underline;
-  }
-  a:focus {
-    outline: thin dotted;
-    outline: 5px auto -webkit-focus-ring-color;
-    outline-offset: -2px;
-  }
-  --> 
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <style type="text/css">
+    < !-- BODY {
+      margin: 0;
+      padding: 0px 0px 0px 300px;
+      /* 左側の横サイズを 150 ピクセルとします */
+      background-color: #000000;
+    }
+
+    * html body {
+      overflow: auto;
+    }
+
+    div {
+      font-size: 14px;
+    }
+
+    div#Left_area {
+      padding: 10px;
+      position: fixed !important;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 280px;
+      /* BODY で設定した150ピクセルの値をセットします　*/
+      height: 100%;
+      /*background-color : #aaff66 ;*/
+      overflow: auto;
+      /* メニュー等の行が多い場合はスクロールバーを表示する */
+    }
+
+    div#Right_area {
+      padding: 10px;
+      background-color: #000000;
+      color: #ffffff;
+    }
+
+    * html div#Right_area {
+      height: 100%;
+      overflow: auto;
+    }
+
+    a {
+      color: #428bca;
+      text-decoration: none;
+    }
+
+    a:hover,
+    a:focus {
+      color: #2a6496;
+      text-decoration: underline;
+    }
+
+    a:focus {
+      outline: thin dotted;
+      outline: 5px auto -webkit-focus-ring-color;
+      outline-offset: -2px;
+    }
+
+    -->
   </style>
   <script src="jquery-3.0.0.min.js"></script>
   <script type="text/javascript" src="data.js"></script>
@@ -61,15 +72,15 @@
     var key_id = "";
     var mode = "show_item";
 
-    function conv_to_array(obj){
-      if(!Array.isArray(obj)){
+    function conv_to_array(obj) {
+      if (!Array.isArray(obj)) {
         var new_array = [obj];
         return new_array;
       }
       return obj;
     }
 
-    function item_data_html(id){
+    function item_data_html(id) {
       var string_html = "";
       item_data = new ItemClass(id);
       console.log(item_data);
@@ -83,23 +94,23 @@
       string_html += "命中ボーナス: " + item_data.getToHit() + "<br>";
       string_html += "攻撃コスト: " + item_data.getAtkCost() + "<br>";
       string_html += "素材: ";
-      for(var mat of item_data.getMaterial()){
-        if(mat){
+      for (var mat of item_data.getMaterial()) {
+        if (mat) {
           string_html += mat.getName() + ", ";
         }
       }
       string_html += "<br>";
-      for(var q of item_data.getQualities()){
-        if(q) {
-          if(q[0]) {
+      for (var q of item_data.getQualities()) {
+        if (q) {
+          if (q[0]) {
             string_html += "レベル " + q[1] + " の " + q[0] + " 性能<br>";
           }
         }
       }
       console.log(item_data.isArmor());
-      if(item_data.isArmor()) {
+      if (item_data.isArmor()) {
         string_html += "着用部位: ";
-        for(var part of item_data.getCovers()) {
+        for (var part of item_data.getCovers()) {
           string_html += part + ", ";
         }
         string_html += "<br>";
@@ -113,7 +124,7 @@
         string_html += "耐火防御: " + item_data.getFireResist() + " <br>";
         string_html += "環境防護: " + item_data.getEnvironmentalProtection() + "<br>";
       }
-      if(item_data.isConductive()) {
+      if (item_data.isConductive()) {
         string_html += "このアイテムは導電体です。<br>";
       } else {
         string_html += "このアイテムは絶縁体です。<br>";
@@ -123,23 +134,23 @@
       return string_html;
     }
 
-    function link_to_item(string, id){
+    function link_to_item(string, id) {
       return '<a href=javascript:select_item("' + id + '")>' + string + '</a>';
     }
 
-    function item_recipe_html(id){
+    function item_recipe_html(id) {
       var string_html = "<h3>レシピ</h3>";
       var recipe_list = new RecipeListClass(id);
       string_html += "<p>";
-      if(!recipe_list.getRecipe(0)){
+      if (!recipe_list.getRecipe(0)) {
         string_html += "レシピはありません。"
-      }else{
+      } else {
         var recipe_data = recipe_list.getRecipe(0);
         string_html += "適用スキル: " + recipe_data.getSkillUsed() + "<br>";
         string_html += "必要スキル: ";
-        if(recipe_data.getSkillsRequired()){
-          for(var r of recipe_data.getSkillsRequired()){
-            if(r[0]) {
+        if (recipe_data.getSkillsRequired()) {
+          for (var r of recipe_data.getSkillsRequired()) {
+            if (r[0]) {
               string_html += r[0] + "(" + r[1] + "), ";
             }
           }
@@ -147,44 +158,44 @@
         string_html += "<br>";
         string_html += "難易度: " + recipe_data.getDifficulty() + "<br>";
         string_html += "完了まで " + (recipe_data.getTime() / 1000) + " 分<br>";
-        for(var q of recipe_data.getQualities()) {
+        for (var q of recipe_data.getQualities()) {
           string_html += "レベル " + q.level + " の " + q.id + " 性能<br>";
         }
-        for(var t of recipe_data.getTools()) {
-          for(var i = 0; i < t.length; ++i) {
-            if(t[i][0]) {
+        for (var t of recipe_data.getTools()) {
+          for (var i = 0; i < t.length; ++i) {
+            if (t[i][0]) {
               console.log(t[i][0]);
               var item = new ItemClass(t[i][0]);
               var charges = t[i][1];
               string_html += link_to_item(item.getName(), item.getId());
               string_html += charges != -1 ? "(充填量: " + charges + ")" : "";
-              if(t.length - 1 > i) {
+              if (t.length - 1 > i) {
                 string_html += " または ";
-              }else{
+              } else {
                 string_html += "<br>";
               }
             }
           }
         }
-        for(var c of recipe_data.getComponents()){
-          for(var i = 0; i < c.length; ++i){
-            if(c[i][0]) {
+        for (var c of recipe_data.getComponents()) {
+          for (var i = 0; i < c.length; ++i) {
+            if (c[i][0]) {
               var item = new ItemClass(c[i][0]);
               var charges = c[i][1];
               string_html += charges + " 個の " + link_to_item(item.getName(), item.getId());
-              if(c.length - 1 > i) {
+              if (c.length - 1 > i) {
                 string_html += " または ";
-              }else{
+              } else {
                 string_html += "<br>";
               }
             }
           }
         }
-        for(var b of recipe_data.getBookLearn()){
-            var item = new ItemClass(b[0]);
-            string_html += link_to_item(item.getName(), item.getId()) + " から適用スキルがレベル " + b[1] + " で習得します。<br>";
+        for (var b of recipe_data.getBookLearn()) {
+          var item = new ItemClass(b[0]);
+          string_html += link_to_item(item.getName(), item.getId()) + " から適用スキルがレベル " + b[1] + " で習得します。<br>";
         }
-        if(recipe_data.getAutolearn()) {
+        if (recipe_data.getAutolearn()) {
           string_html += "このレシピは必要スキルを満たしたときに自動で習得します。<br>";
         }
       }
@@ -192,9 +203,9 @@
       return string_html;
     }
 
-    function update_data(){
+    function update_data() {
       $('#Right_area').empty();
-      if(mode == "show_item"){
+      if (mode == "show_item") {
         var recipe_list = new RecipeListClass(key_id);
         var item_data = new ItemClass(key_id);
         console.log(JSON.stringify(item_data));
@@ -216,20 +227,20 @@
       }
     }
 
-    function select_item(key){
+    function select_item(key) {
       key_id = key;
       update_data();
     }
 
-    function search_data(){
+    function search_data() {
       var hoge = search.textbox.value;
       $('#search_result').empty()
-      for(var item of items){
-        if(item.name && item.id && hoge){
-          if(item.name.indexOf(hoge) != -1){
+      for (var item of items) {
+        if (item.name && item.id && hoge) {
+          if (item.name.indexOf(hoge) != -1) {
             $('#search_result').append(
               '<a href=javascript:select_item("' + item.id + '")>' + item.name + '</a><br>'
-              );
+            );
           }
         }
       }
@@ -238,16 +249,18 @@
   <script type="text/javascript">
   </script>
 </head>
+
 <body>
 
-<div id="Left_area">
-  <form name="search">
-    <input type="text" name="textbox" onkeyup="search_data()" placeholder="検索キーワードを入力してください">
-  </form>
-  <div id="search_result">
+  <div id="Left_area">
+    <form name="search">
+      <input type="text" name="textbox" onkeyup="search_data()" placeholder="検索キーワードを入力してください">
+    </form>
+    <div id="search_result">
+    </div>
   </div>
-</div>
-<div id="Right_area">
-</div>
+  <div id="Right_area">
+  </div>
 </body>
+
 </html>

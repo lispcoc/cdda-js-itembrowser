@@ -32,7 +32,7 @@ item_types = {
   "BOOK",
   "MAGAZINE",
   "ENGINE",
-  "WHEEL",
+  "WHEEL"
 }
 
 function is_new_type(t)
@@ -56,28 +56,29 @@ end
 
 function is_recipe_type(t)
   if t == recipe_type then
-    return true;
+    return true
   end
   return false
 end
 
 function is_requirement_type(t)
   if t == requirement_type then
-    return true;
+    return true
   end
   return false
 end
 
 function is_material_type(t)
   if t == material_type then
-    return true;
+    return true
   end
   return false
 end
 
 function translate_table(lang_data, t)
   local translate_members = {
-    "name", "description"
+    "name",
+    "description"
   }
   for key, val in pairs(t) do
     for mkey, mval in pairs(translate_members) do
@@ -92,10 +93,10 @@ function translate_table(lang_data, t)
   return t
 end
 
-local fd,err = io.open(lang_file, "rb")
+local fd, err = io.open(lang_file, "rb")
 if not fd then
-  print("エラー！言語ファイルが見つかりません。")
-  return nil,err
+  print("Error: Language file is not found.")
+  return nil, err
 end
 local raw_lang_data = fd:read("*all")
 fd:close()
@@ -112,7 +113,7 @@ local materials = {}
 while filepath do
   local jsonfile = io.open(filepath)
   if jsonfile then
-    print("Processing : "..filepath)
+    print("Processing : " .. filepath)
     local data = json.decode(jsonfile:read("*a"))
     for key, val in pairs(data) do
       if type(val) == "table" then
@@ -157,7 +158,6 @@ io.write(";\n")
 io.write("var materials = ")
 io.write(json.encode(materials))
 io.write(";\n")
-
 
 --[[
   anatomy
