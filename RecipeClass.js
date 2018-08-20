@@ -139,29 +139,34 @@ RecipeClass.prototype.getQualities = function () {
   if (!Array.isArray (this.qualities)) {
     this.qualities = [this.qualities];
   }
+
+  if (this.json.using) {
+    console.log (this.json.using);
+    for (u of this.json.using) {
+      var req = new RequirementClass (u[0]);
+      var r = req.getQualities (u[1]);
+      if (r.length > 0) {
+        console.log (r);
+        Array.prototype.push.apply (this.qualities, r);
+      }
+    }
+  }
+
   return this.qualities;
 };
 
 RecipeClass.prototype.getTools = function () {
-  // todo:ソースが汚いので整理する
-  // todo:型の次元が想定外の場合対策する必要あるかも？
   if (!this.tools) {
     this.tools = [];
 
     if (this.json.using) {
       console.log (this.json.using);
       for (u of this.json.using) {
-        var requirement = copy_json_obj (
-          internal_get_requirement_from_id (u[0])
-        );
-        console.log (requirement);
-        if (requirement.tools) {
-          for (r of requirement.tools) {
-            for (rr of r) {
-              rr[1] = u[1] != -1 && rr[1] != -1 ? u[1] * rr[1] : -1;
-            }
-            this.tools.push (r);
-          }
+        var req = new RequirementClass (u[0]);
+        var r = req.getTools (u[1]);
+        if (r.length > 0) {
+          console.log (r);
+          Array.prototype.push.apply (this.tools, r);
         }
       }
     }
@@ -177,15 +182,9 @@ RecipeClass.prototype.getTools = function () {
       var tmp_tools_2 = [];
       for (t2 of t1) {
         if (t2[2] == 'LIST') {
-          var requirement = copy_json_obj (
-            internal_get_requirement_from_id (t2[0])
-          );
-          if (requirement.tools[0]) {
-            for (t3 of requirement.tools[0]) {
-              t3[1] = t2[1] != -1 && t3[1] != -1 ? t2[1] * t3[1] : -1;
-              tmp_tools_2.push (t3);
-            }
-          }
+          var req = new RequirementClass (t2[0]);
+          var r = req.getToolSelections (t2[1]);
+          Array.prototype.push.apply (tmp_tools_2, r);
         } else {
           if (t2) {
             tmp_tools_2.push (t2);
@@ -201,25 +200,17 @@ RecipeClass.prototype.getTools = function () {
 };
 
 RecipeClass.prototype.getComponents = function () {
-  // todo:ソースが汚いので整理する
-  // todo:型の次元が想定外の場合対策する必要あるかも？
   if (!this.components) {
     this.components = [];
 
     if (this.json.using) {
       console.log (this.json.using);
       for (u of this.json.using) {
-        var requirement = copy_json_obj (
-          internal_get_requirement_from_id (u[0])
-        );
-        console.log (requirement);
-        if (requirement.components) {
-          for (r of requirement.components) {
-            for (rr of r) {
-              rr[1] = u[1] != -1 && rr[1] != -1 ? u[1] * rr[1] : -1;
-            }
-            this.components.push (r);
-          }
+        var req = new RequirementClass (u[0]);
+        var r = req.getComponents (u[1]);
+        if (r.length > 0) {
+          console.log (r);
+          Array.prototype.push.apply (this.components, r);
         }
       }
     }
@@ -229,21 +220,15 @@ RecipeClass.prototype.getComponents = function () {
       tmp_components = this.json.components;
     } else if (this.json['copy-from']) {
       var copy_from = new ItemClass (this.json['copy-from']);
-      tmp_components = copy_from.getTools ();
+      tmp_components = copy_from.getComponents ();
     }
     for (t1 of tmp_components) {
       var tmp_components_2 = [];
       for (t2 of t1) {
         if (t2[2] == 'LIST') {
-          var requirement = copy_json_obj (
-            internal_get_requirement_from_id (t2[0])
-          );
-          if (requirement.components[0]) {
-            for (t3 of requirement.components[0]) {
-              t3[1] = t2[1] != -1 && t3[1] != -1 ? t2[1] * t3[1] : -1;
-              tmp_components_2.push (t3);
-            }
-          }
+          var req = new RequirementClass (t2[0]);
+          var r = req.getComponentSelections (t2[1]);
+          Array.prototype.push.apply (tmp_components_2, r);
         } else {
           if (t2) {
             tmp_components_2.push (t2);

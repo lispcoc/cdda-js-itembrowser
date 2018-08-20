@@ -1,6 +1,6 @@
 BODY {
   margin: 0;
-  padding: 0px 0px 0px 300px;
+  padding: 0px 0px 0px 270px;
   background-color: #000000;
 }
 
@@ -18,7 +18,7 @@ div#Left_area {
   position: absolute;
   top: 0;
   left: 0;
-  width: 280px;
+  width: 240px;
   height: 100%;
   overflow: auto;
 }

@@ -436,3 +436,59 @@ ItemClass.prototype.isConductive = function () {
   }
   return false;
 };
+
+ItemClass.prototype.dumpBasicData = function () {
+  var string_html = '';
+  string_html +=
+    '<h2><font color=' +
+    this.getSymbolColor () +
+    '>' +
+    this.getSymbol () +
+    '</font> ' +
+    this.getName () +
+    '</h3>';
+  string_html += '<p>';
+  string_html += 'id: ' + this.getId () + '<br>';
+  string_html += '容積: ' + this.getVolume () * 0.25 + ' L<br>';
+  string_html += '重量: ' + this.getWeight () * 0.001 + ' kg<br>';
+  string_html += '打撃: ' + this.getBashing () + ' ';
+  string_html += '斬撃: ' + this.getCutting () + ' ';
+  string_html += '命中ボーナス: ' + this.getToHit () + '<br>';
+  string_html += '攻撃コスト: ' + this.getAtkCost () + '<br>';
+  string_html += '素材: ';
+  for (var mat of this.getMaterial ()) {
+    if (mat) {
+      string_html += mat.getName () + ', ';
+    }
+  }
+  string_html += '<br>';
+  for (var q of this.getQualities ()) {
+    if (q) {
+      if (q[0]) {
+        string_html += 'レベル ' + q[1] + ' の ' + q[0] + ' 性能<br>';
+      }
+    }
+  }
+  return string_html;
+};
+
+ItemClass.prototype.dumpArmorData = function () {
+  var string_html = '';
+  if (this.isArmor()) {
+    string_html += '着用部位: ';
+    for (var part of this.getCovers ()) {
+      string_html += part + ', ';
+    }
+    string_html += '<br>';
+    string_html += '収納: ' + this.getStorage () * 0.25 + ' L<br>';
+    string_html += '動作制限: ' + this.getEncumbrance () + ' ';
+    string_html += '暖かさ: ' + this.getWarmth () + ' ';
+    string_html += '被覆率: ' + this.getCoverage () + ' %<br>';
+    string_html += '打撃防御: ' + this.getBashResist () + ' ';
+    string_html += '斬撃防御: ' + this.getCutResist () + ' <br>';
+    string_html += '耐酸防御: ' + this.getAcidResist () + ' ';
+    string_html += '耐火防御: ' + this.getFireResist () + ' <br>';
+    string_html += '環境防護: ' + this.getEnvironmentalProtection () + '<br>';
+  }
+  return string_html;
+};
