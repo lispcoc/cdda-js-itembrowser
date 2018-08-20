@@ -462,6 +462,13 @@ ItemClass.prototype.dumpBasicData = function () {
     }
   }
   string_html += '<br>';
+  string_html += 'Flags: ';
+  for (var flg of this.getFlags ()) {
+    if (flg) {
+      string_html += flg + ', ';
+    }
+  }
+  string_html += '<br>';
   for (var q of this.getQualities ()) {
     if (q) {
       if (q[0]) {

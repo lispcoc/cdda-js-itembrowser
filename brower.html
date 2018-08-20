@@ -70,8 +70,8 @@
             string_html += "レベル " + q.level + " の " + q.id + " 性能<br>";
           }
           for (var t of recipe_data.getTools()) {
+            string_html += "&gt;";
             for (var i = 0; i < t.length; ++i) {
-              string_html += "&gt;";
               if (t[i][0]) {
                 console.log(t[i][0]);
                 var item = new ItemClass(t[i][0]);
@@ -87,8 +87,8 @@
             }
           }
           for (var c of recipe_data.getComponents()) {
+            string_html += "&gt;";
             for (var i = 0; i < c.length; ++i) {
-              string_html += "&gt;";
               if (c[i][0]) {
                 var item = new ItemClass(c[i][0]);
                 var charges = c[i][1];
