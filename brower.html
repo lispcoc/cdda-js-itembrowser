@@ -6,6 +6,7 @@
   <script src="jquery-3.0.0.min.js"></script>
   <script type="text/javascript" src="data.js"></script>
   <script type="text/javascript" src="cdda.js"></script>
+  <script type="text/javascript" src="JsonFlagClass.js"></script>
   <script type="text/javascript" src="MaterialClass.js"></script>
   <script type="text/javascript" src="ItemClass.js"></script>
   <script type="text/javascript" src="RequirementClass.js"></script>
@@ -27,15 +28,12 @@
       item_data = new ItemClass(id);
       console.log(item_data);
 
-      string_html += item_data.dumpBasicData();
-      string_html += item_data.dumpArmorData();
-
-      if (item_data.isConductive()) {
-        string_html += "このアイテムは導電体です。<br>";
-      } else {
-        string_html += "このアイテムは絶縁体です。<br>";
+      string_html += item_data.dumpBasicData() + '<br>';
+      if (item_data.isArmor()) {
+        string_html += item_data.dumpArmorData() + '<br>';
       }
-      string_html += item_data.getDescription() + "<br>";
+      string_html += item_data.getDescription() + '<br>';
+
       string_html += "</p>";
       return string_html;
     }

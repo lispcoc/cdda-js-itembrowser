@@ -1,0 +1,22 @@
+function internal_get_json_flag_from_id (key_id) {
+  for (var flag of flags) {
+    if (flag.id) {
+      if (flag.id == key_id) {
+        return flag;
+      }
+    }
+  }
+  return null;
+}
+
+JsonFlagClass = function (id) {
+  this.id = id;
+  this.json = internal_get_json_flag_from_id (this.id);
+};
+
+JsonFlagClass.prototype.getInfo = function (id) {
+  if (!this.json) {
+    return null;
+  }
+  return this.json.info;
+};

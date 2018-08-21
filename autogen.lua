@@ -46,7 +46,7 @@ function is_new_type(t)
 end
 
 function is_item_type(t)
-  for key, val in ipairs(item_types) do
+  for _, val in ipairs(item_types) do
     if val == t then
       return true
     end
@@ -75,10 +75,18 @@ function is_material_type(t)
   return false
 end
 
+function is_flag_type(t)
+  if t == flag_type then
+    return true
+  end
+  return false
+end
+
 function translate_table(lang_data, t)
   local translate_members = {
     "name",
-    "description"
+    "description",
+    "info"
   }
   for key, val in pairs(t) do
     for mkey, mval in pairs(translate_members) do
@@ -109,6 +117,7 @@ local items = {}
 local recipes = {}
 local requirements = {}
 local materials = {}
+local flags = {}
 
 while filepath do
   local jsonfile = io.open(filepath)
@@ -132,6 +141,9 @@ while filepath do
         elseif is_material_type(type_val) then
           new_val = translate_table(lang_data, val)
           table.insert(materials, new_val)
+        elseif is_flag_type(type_val) then
+          new_val = translate_table(lang_data, val)
+          table.insert(flags, new_val)
         end
       end
     end
@@ -157,6 +169,10 @@ io.write(";\n")
 
 io.write("var materials = ")
 io.write(json.encode(materials))
+io.write(";\n")
+
+io.write("var flags = ")
+io.write(json.encode(flags))
 io.write(";\n")
 
 --[[

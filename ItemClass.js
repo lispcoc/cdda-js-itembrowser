@@ -455,6 +455,7 @@ ItemClass.prototype.dumpBasicData = function () {
   string_html += '斬撃: ' + this.getCutting () + ' ';
   string_html += '命中ボーナス: ' + this.getToHit () + '<br>';
   string_html += '攻撃コスト: ' + this.getAtkCost () + '<br>';
+
   string_html += '素材: ';
   for (var mat of this.getMaterial ()) {
     if (mat) {
@@ -462,13 +463,7 @@ ItemClass.prototype.dumpBasicData = function () {
     }
   }
   string_html += '<br>';
-  string_html += 'Flags: ';
-  for (var flg of this.getFlags ()) {
-    if (flg) {
-      string_html += flg + ', ';
-    }
-  }
-  string_html += '<br>';
+
   for (var q of this.getQualities ()) {
     if (q) {
       if (q[0]) {
@@ -476,12 +471,37 @@ ItemClass.prototype.dumpBasicData = function () {
       }
     }
   }
+
+  string_html += 'Flags: ';
+  for (var flag_id of this.getFlags ()) {
+    if (flag_id) {
+      string_html += flag_id + ', ';
+    }
+  }
+  string_html += '<br>';
+
+  for (var flag_id of this.getFlags ()) {
+    if (flag_id) {
+      var flag = new JsonFlagClass (flag_id);
+      if (flag) {
+        if (flag.getInfo ()) {
+          string_html += flag.getInfo () + '<br>';
+        }
+      }
+    }
+  }
+  if (this.isConductive()) {
+    string_html += "このアイテムは導電体です。<br>";
+  } else {
+    string_html += "このアイテムは絶縁体です。<br>";
+  }
+
   return string_html;
 };
 
 ItemClass.prototype.dumpArmorData = function () {
   var string_html = '';
-  if (this.isArmor()) {
+  if (this.isArmor ()) {
     string_html += '着用部位: ';
     for (var part of this.getCovers ()) {
       string_html += part + ', ';
