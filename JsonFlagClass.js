@@ -1,4 +1,11 @@
 function internal_get_json_flag_from_id (key_id) {
+  for (var flag of mod_flags) {
+    if (flag.id) {
+      if (flag.id == key_id) {
+        return flag;
+      }
+    }
+  }
   for (var flag of flags) {
     if (flag.id) {
       if (flag.id == key_id) {

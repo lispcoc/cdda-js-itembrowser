@@ -1,5 +1,13 @@
 function internal_get_material_from_id (key_id) {
   console.log (key_id);
+  for (var mat of mod_materials) {
+    if (mat.ident) {
+      if (mat.ident == key_id) {
+        console.log (mat.name);
+        return mat;
+      }
+    }
+  }
   for (var mat of materials) {
     if (mat.ident) {
       if (mat.ident == key_id) {

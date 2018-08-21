@@ -142,13 +142,22 @@
     }
 
     function search_data() {
-      var hoge = search.textbox.value;
+      var key = search.textbox.value;
       $('#search_result').empty()
       for (var item of items) {
-        if (item.name && item.id && hoge) {
-          if (item.name.indexOf(hoge) != -1) {
+        if (item.name && item.id && key) {
+          if (item.name.indexOf(key) != -1) {
             $('#search_result').append(
               '<a href=javascript:select_item("' + item.id + '")>' + item.name + '</a><br>'
+            );
+          }
+        }
+      }
+      for (var item of mod_items) {
+        if (item.name && item.id && key) {
+          if (item.name.indexOf(key) != -1) {
+            $('#search_result').append(
+              '<a href=javascript:select_item("' + item.id + '")>[MOD]' + item.name + '</a><br>'
             );
           }
         }

@@ -3,6 +3,13 @@ function copy_json_obj (obj) {
 }
 
 function internal_get_requirement_from_id (key_id) {
+  for (var requirement of mod_requirements) {
+    if (requirement['id']) {
+      if (requirement['id'] == key_id) {
+        return requirement;
+      }
+    }
+  }
   for (var requirement of requirements) {
     if (requirement['id']) {
       if (requirement['id'] == key_id) {
@@ -119,8 +126,10 @@ RequirementClass.prototype.getComponents = function (multiplier) {
 RequirementClass.prototype.getQualities = function () {
   if (!this.qualities) {
     this.qualities = [];
-    for (q of this.json.qualities) {
-      this.component_selections.push (q);
+    if (this.json.qualities) {
+      for (q of this.json.qualities) {
+        this.qualities.push (q);
+      }
     }
   }
   return this.qualities;
