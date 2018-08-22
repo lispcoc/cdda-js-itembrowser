@@ -76,7 +76,7 @@ RecipeClass.prototype.getCopyFrom = function () {
     if (this.json['copy-from'] == this.id) {
       return new RecipeClass (this.json['copy-from'], this.nested + 1);
     }
-    return new RecipeClass (this.json['copy-from']);
+    return new RecipeClass (this.json['copy-from'], 0);
   }
   return null;
 };

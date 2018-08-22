@@ -1,10 +1,55 @@
 var const_type_armor = 'ARMOR';
 
+function deep_copy (obj) {
+  return JSON.parse (JSON.stringify (obj));
+}
+
+function convert_volume (volume) {
+  if (typeof volume == 'string') {
+    var result = volume.match (/(\d+)(\w+)/);
+    if (result[2].toLowerCase () == 'l') {
+      volume = result[1] * 4;
+    } else if (result[2].toLowerCase () == 'ml') {
+      volume = result[1] / 250;
+    } else {
+      volume = 0;
+    }
+  }
+  return volume;
+}
+
+function load_from_json(data, slot, jo, base_slot){
+  slot[data.name] = data.failsafe;
+  if (base_slot) {
+    slot[data.name] = base_slot[data.name];
+  }
+  if (jo[v.name]) {
+    slot[data.name] = jo[data.name];
+  }
+}
+
+function load_list_from_json(data, slot, jo, base_slot){
+  slot[data.name] = data.failsafe;
+  if (base_slot) {
+    slot[data.name] = base_slot[data.name];
+  }
+  if (jo[data.name]) {
+    if (data.set_after_clear) {
+      slot[data.name] = data.failsafe;
+    }
+    var tmp = jo[data.name];
+    if (!Array.isArray (tmp)) {
+      tmp = [tmp];
+    }
+    Array.prototype.push.apply (slot[data.name], tmp);
+  }
+}
+
 function internal_get_item_from_id (key_id, num = 0) {
   for (var item of mod_items) {
     if (item.id || item.abstract) {
       if (item.id == key_id || item.abstract == key_id) {
-        if(num == 0){
+        if (num == 0) {
           return item;
         }
         num--;
@@ -14,7 +59,7 @@ function internal_get_item_from_id (key_id, num = 0) {
   for (var item of items) {
     if (item.id || item.abstract) {
       if (item.id == key_id || item.abstract == key_id) {
-        if(num == 0){
+        if (num == 0) {
           return item;
         }
         num--;
@@ -28,6 +73,7 @@ ItemClass = function (item_id, nested = 0) {
   this.id = item_id;
   this.json = internal_get_item_from_id (this.id, nested);
   this.nested = nested;
+  this.init ();
 };
 
 ItemClass.prototype.getJson = function () {
@@ -47,214 +93,164 @@ ItemClass.prototype.getCopyFrom = function () {
     if (this.json['copy-from'] == this.getId ()) {
       return new ItemClass (this.json['copy-from'], this.nested + 1);
     }
-    return new ItemClass (this.json['copy-from']);
+    return new ItemClass (this.json['copy-from'], 0);
   }
   return null;
 };
 
-ItemClass.prototype.getName = function () {
-  if (!this.name) {
-    var copy_from = this.getCopyFrom();
-    if (this.json.name) {
-      this.name = this.json.name;
-    } else if (copy_from) {
-      this.name = copy_from.getName ();
-    } else {
-      this.name = 'No name';
-    }
+ItemClass.prototype.init = function () {
+  var base = this.getCopyFrom ();
+  var variables = [
+    {name: 'category', failsafe: ''},
+    {name: 'weight', failsafe: 0},
+    {name: 'volume', failsafe: 0},
+    {name: 'price', failsafe: 0},
+    {name: 'price_postapoc', failsafe: 0},
+    {name: 'stackable', failsafe: false},
+    {name: 'integral_volume', failsafe: 0},
+    {name: 'bashing', failsafe: 0},
+    {name: 'cutting', failsafe: 0},
+    {name: 'to_hit', failsafe: 0},
+    {name: 'container', failsafe: ''},
+    {name: 'rigid', failsafe: false},
+    {name: 'min_strength', failsafe: 0},
+    {name: 'min_dexterity', failsafe: 0},
+    {name: 'min_intelligence', failsafe: 0},
+    {name: 'min_perception', failsafe: 0},
+    {name: 'magazine_well', failsafe: 0},
+    {name: 'explode_in_fire', failsafe: false},
+    {name: 'name', failsafe: 'No name'},
+    {name: 'description', failsafe: ''},
+    {name: 'symbol', failsafe: ''},
+    {name: 'color', failsafe: 'white'},
+    {name: 'phase', failsafe: 'SOLID'},
+  ];
+  var lists = [
+    {name: 'emits', failsafe: []},
+    {name: 'material', failsafe: [], set_after_clear: true},
+    {name: 'flags', failsafe: []},
+    {name: 'qualities', failsafe: []},
+    {name: 'techniques', failsafe: []},
+  ];
+
+  for (v of variables) {
+    load_from_json(v, this, this.json, base);
   }
+
+  for (v of lists) {
+    load_list_from_json(v, this, this.json, base);
+  }
+
+  this['volume'] = convert_volume (this['volume']);
+
+  this.initArmorData ();
+};
+
+ItemClass.prototype.initArmorData = function () {
+  this.armor_data = null;
+
+  var base = this.getCopyFrom ();
+  var variables = [
+    {name: 'encumbrance', failsafe: 0},
+    {name: 'coverage', failsafe: 0},
+    {name: 'material_thickness', failsafe: 0},
+    {name: 'environmental_protection', failsafe: 0},
+    {name: 'environmental_protection_with_filter', failsafe: 0},
+    {name: 'warmth', failsafe: 0},
+    {name: 'storage', failsafe: 0},
+    {name: 'power_armor', failsafe: false},
+  ];
+  var lists = [
+    {name: 'covers', failsafe: []},
+  ];
+
+  var jo = null;
+  if (this.getType () == const_type_armor) {
+    jo = this.json;
+  } else if (this.json.armor_data) {
+    jo = this.json.armor_data;
+  }
+  if (jo == null) {
+    return;
+  }
+
+  var slot = {};
+  var base_slot = base ? base.armor_data : null;
+
+  for (v of variables) {
+    load_from_json(v, slot, jo, base_slot);
+  }
+
+  for (v of lists) {
+    load_list_from_json(v, slot, jo, base_slot);
+  }
+
+  slot['storage'] = convert_volume (slot['storage']);
+
+  this.armor_data = slot;
+};
+
+ItemClass.prototype.getName = function () {
   return this.name;
 };
 
 ItemClass.prototype.getDescription = function () {
-  if (!this.description) {
-    var copy_from = this.getCopyFrom();
-    if (this.json.description) {
-      this.description = this.json.description;
-    } else if (copy_from) {
-      this.description = copy_from.getDescription ();
-    } else {
-      this.description = 'No description.';
-    }
-  }
   return this.description;
 };
 
 ItemClass.prototype.getSymbol = function () {
-  if (!this.symbol) {
-    var copy_from = this.getCopyFrom();
-    if (this.json.symbol) {
-      this.symbol = this.json.symbol;
-    } else if (copy_from) {
-      this.symbol = copy_from.getSymbol ();
-    } else {
-      this.symbol = ' ';
-    }
-  }
   return this.symbol;
 };
 
 ItemClass.prototype.getSymbolColor = function () {
   // todo: 背景色に対応する
-  if (!this.color) {
-    var copy_from = this.getCopyFrom();
-    if (this.json.color) {
-      this.color = this.json.color;
-    } else if (copy_from) {
-      this.color = copy_from.getSymbolColor ();
-    } else {
-      this.color = 'white';
-    }
-  }
   return this.color;
 };
 
 ItemClass.prototype.getVolume = function () {
-  if (!this.volume) {
-    var copy_from = this.getCopyFrom();
-    if (this.json.volume) {
-      this.volume = this.json.volume;
-    } else if (copy_from) {
-      this.volume = copy_from.getVolume ();
-    } else {
-      this.volume = 0;
-    }
-  }
-  // Convert to int
-  if (typeof this.volume == 'string') {
-    var result = this.volume.match (/(\d+)(\w)/);
-    console.log (result);
-    if (result[2] == 'L') {
-      this.volume = Math.floor (result[1] * 4);
-    } else if (result[2] == 'mL') {
-      this.volume = Math.floor (result[1] / 250);
-    } else {
-      this.volume = 0;
-    }
-  }
   return this.volume;
 };
 
 ItemClass.prototype.getWeight = function () {
-  if (!this.weight) {
-    var copy_from = this.getCopyFrom();
-    if (this.json.weight) {
-      this.weight = this.json.weight;
-    } else if (copy_from) {
-      this.weight = copy_from.getWeight ();
-    } else {
-      this.weight = 0;
-    }
-  }
   return this.weight;
 };
 
 ItemClass.prototype.getBashing = function () {
-  if (!this.bashing) {
-    var copy_from = this.getCopyFrom();
-    if (this.json.bashing) {
-      this.bashing = this.json.bashing;
-    } else if (copy_from) {
-      this.bashing = copy_from.getBashing ();
-    } else {
-      this.bashing = 0;
-    }
-  }
   return this.bashing;
 };
 
 ItemClass.prototype.getCutting = function () {
-  if (!this.cutting) {
-    var copy_from = this.getCopyFrom();
-    if (this.json.cutting) {
-      this.cutting = this.json.cutting;
-    } else if (copy_from) {
-      this.cutting = copy_from.getCutting ();
-    } else {
-      this.cutting = 0;
-    }
-  }
   return this.cutting;
 };
 
 ItemClass.prototype.getToHit = function () {
-  if (!this.to_hit) {
-    var copy_from = this.getCopyFrom();
-    if (this.json.to_hit) {
-      this.to_hit = this.json.to_hit;
-    } else if (copy_from) {
-      this.to_hit = copy_from.getToHit ();
-    } else {
-      this.to_hit = 0;
-    }
-  }
   return this.to_hit;
+};
+
+ItemClass.prototype.getMaterial = function () {
+  return this.material;
+};
+
+ItemClass.prototype.getQualities = function () {
+  return this.qualities;
 };
 
 ItemClass.prototype.getAtkCost = function () {
   return Math.floor (65 + 4 * this.getVolume () + this.getWeight () / 60);
 };
 
-ItemClass.prototype.getMaterialId = function () {
-  if (!this.material_id) {
-    var copy_from = this.getCopyFrom();
-    this.material_id = [];
-    if (this.json.material) {
-      this.material_id = this.json.material;
-    } else if (copy_from) {
-      this.material_id = copy_from.getMaterialId ();
-    } else {
-      this.material_id = [];
-    }
-    if (!Array.isArray (this.material_id)) {
-      this.material_id = [this.material_id];
-    }
-  }
-  return this.material_id;
-};
-
-ItemClass.prototype.getMaterial = function () {
-  if (!this.material) {
-    this.material = [];
-    var tmp_materials = this.getMaterialId ();
+ItemClass.prototype.getMaterialInstance = function () {
+  if (!this.material_instance) {
+    this.material_instance = [];
+    var tmp_materials = this.getMaterial ();
     for (mat_id of tmp_materials) {
-      this.material.push (new MaterialClass (mat_id));
+      this.material_instance.push (new MaterialClass (mat_id));
     }
   }
-  return this.material;
-};
-
-ItemClass.prototype.getQualities = function () {
-  if (!this.qualities) {
-    var copy_from = this.getCopyFrom();
-    if (this.json.qualities) {
-      this.qualities = this.json.qualities;
-    } else if (copy_from) {
-      this.qualities = copy_from.getQualities ();
-    } else {
-      this.qualities = [[]];
-    }
-  }
-  if (!Array.isArray (this.qualities[0])) {
-    this.qualities = [this.qualities];
-  }
-  return this.qualities;
+  return this.material_instance;
 };
 
 ItemClass.prototype.getFlags = function () {
-  if (!this.flags) {
-    var copy_from = this.getCopyFrom();
-    if (this.json.flags) {
-      this.flags = this.json.flags;
-    } else if (copy_from) {
-      this.flags = copy_from.getFlags ();
-    } else {
-      this.flags = [];
-    }
-  }
-  if (!Array.isArray (this.flags)) {
-    this.flags = [this.flags];
-  }
   return this.flags;
 };
 
@@ -267,185 +263,6 @@ ItemClass.prototype.hasFlag = function (key_flag) {
   return false;
 };
 
-//
-// ARMOR
-//
-
-ItemClass.prototype.getArmorDataJson = function () {
-  var copy_from = this.getCopyFrom();
-  if (this.getType () == const_type_armor) {
-    return this.json;
-  } else if (this.json.armor_data) {
-    return this.json.armor_data;
-  } else if (copy_from) {
-    return copy_from.getArmorDataJson ();
-  }
-  return null;
-};
-
-ItemClass.prototype.isArmor = function () {
-  if (this.getArmorDataJson () != null) {
-    return true;
-  }
-  return false;
-};
-
-ItemClass.prototype.getCovers = function () {
-  this.covers = [];
-  if (this.isArmor ()) {
-    var copy_from = this.getCopyFrom();
-    var armor_data = this.getArmorDataJson ();
-    if (armor_data.covers) {
-      this.covers = armor_data.covers;
-    } else if (copy_from) {
-      return copy_from.getCovers ();
-    }
-  }
-  return this.covers;
-};
-
-ItemClass.prototype.getStorage = function () {
-  this.storage = 0;
-  if (this.isArmor ()) {
-    var copy_from = this.getCopyFrom();
-    var armor_data = this.getArmorDataJson ();
-    if (armor_data.storage) {
-      this.storage = armor_data.storage;
-    } else if (copy_from) {
-      return copy_from.getStorage ();
-    }
-  }
-  return this.storage;
-};
-
-ItemClass.prototype.getEncumbrance = function () {
-  this.encumbrance = 0;
-  if (this.isArmor ()) {
-    var copy_from = this.getCopyFrom();
-    var armor_data = this.getArmorDataJson ();
-    if (armor_data.encumbrance) {
-      this.encumbrance = armor_data.encumbrance;
-    } else if (copy_from) {
-      return copy_from.getEncumbrance ();
-    }
-  }
-  return this.encumbrance;
-};
-
-ItemClass.prototype.getWarmth = function () {
-  this.warmth = 0;
-  if (this.isArmor ()) {
-    var copy_from = this.getCopyFrom();
-    var armor_data = this.getArmorDataJson ();
-    if (armor_data.warmth) {
-      this.warmth = armor_data.warmth;
-    } else if (copy_from) {
-      return copy_from.getWarmth ();
-    }
-  }
-  return this.warmth;
-};
-
-ItemClass.prototype.getCoverage = function () {
-  this.coverage = 0;
-  if (this.isArmor ()) {
-    var copy_from = this.getCopyFrom();
-    var armor_data = this.getArmorDataJson ();
-    if (armor_data.coverage) {
-      this.coverage = armor_data.coverage;
-    } else if (copy_from) {
-      return copy_from.getCoverage ();
-    }
-  }
-  return this.coverage;
-};
-
-ItemClass.prototype.getEnvironmentalProtection = function () {
-  this.environmental_protection = 0;
-  if (this.isArmor ()) {
-    var copy_from = this.getCopyFrom();
-    var armor_data = this.getArmorDataJson ();
-    if (armor_data.environmental_protection) {
-      this.environmental_protection = armor_data.environmental_protection;
-    } else if (copy_from) {
-      return copy_from.getEnvironmentalProtection ();
-    }
-  }
-  return this.environmental_protection;
-};
-
-ItemClass.prototype.getMaterialThickness = function () {
-  this.material_thickness = 0;
-  if (this.isArmor ()) {
-    var copy_from = this.getCopyFrom();
-    var armor_data = this.getArmorDataJson ();
-    if (armor_data.material_thickness) {
-      this.material_thickness = armor_data.material_thickness;
-    } else if (copy_from) {
-      return copy_from.getMaterialThickness ();
-    }
-  }
-  return this.material_thickness;
-};
-
-ItemClass.prototype.getBashResist = function () {
-  this.bash_resist = 0;
-  if (this.isArmor ()) {
-    for (m of this.getMaterial ()) {
-      this.bash_resist += m.getBashResist ();
-    }
-    this.bash_resist /= this.getMaterial ().length;
-    this.bash_resist *= this.getMaterialThickness ();
-    this.bash_resist = Math.round (this.bash_resist);
-  }
-  return this.bash_resist;
-};
-
-ItemClass.prototype.getCutResist = function () {
-  this.cut_resist = 0;
-  if (this.isArmor ()) {
-    for (m of this.getMaterial ()) {
-      this.cut_resist += m.getCutResist ();
-    }
-    this.cut_resist /= this.getMaterial ().length;
-    this.cut_resist *= this.getMaterialThickness ();
-    this.cut_resist = Math.round (this.cut_resist);
-  }
-  return this.cut_resist;
-};
-
-ItemClass.prototype.getAcidResist = function () {
-  this.acid_resist = 0;
-  if (this.isArmor ()) {
-    for (m of this.getMaterial ()) {
-      this.acid_resist += m.getAcidResist ();
-    }
-    this.acid_resist /= this.getMaterial ().length;
-    if (this.getEnvironmentalProtection () < 10) {
-      this.acid_resist *= this.getEnvironmentalProtection ();
-      this.acid_resist /= 10;
-    }
-    this.acid_resist = Math.round (this.acid_resist);
-  }
-  return this.acid_resist;
-};
-
-ItemClass.prototype.getFireResist = function () {
-  this.fire_resist = 0;
-  if (this.isArmor ()) {
-    for (m of this.getMaterial ()) {
-      this.fire_resist += m.getFireResist ();
-    }
-    this.fire_resist /= this.getMaterial ().length;
-    if (this.getEnvironmentalProtection () < 10) {
-      this.fire_resist *= this.getEnvironmentalProtection ();
-      this.fire_resist /= 10;
-    }
-    this.fire_resist = Math.round (this.fire_resist);
-  }
-  return this.fire_resist;
-};
-
 ItemClass.prototype.isConductive = function () {
   if (this.hasFlag ('CONDUCTIVE')) {
     return true;
@@ -453,7 +270,7 @@ ItemClass.prototype.isConductive = function () {
   if (this.hasFlag ('NONCONDUCTIVE')) {
     return false;
   }
-  for (m of this.getMaterial ()) {
+  for (m of this.getMaterialInstance ()) {
     if (m.getElecResist () <= 1) {
       return true;
     }
@@ -481,7 +298,7 @@ ItemClass.prototype.dumpBasicData = function () {
   string_html += '攻撃コスト: ' + this.getAtkCost () + '<br>';
 
   string_html += '素材: ';
-  for (var mat of this.getMaterial ()) {
+  for (var mat of this.getMaterialInstance ()) {
     if (mat) {
       string_html += mat.getName () + ', ';
     }
@@ -521,6 +338,132 @@ ItemClass.prototype.dumpBasicData = function () {
   }
 
   return string_html;
+};
+
+ItemClass.prototype.getArmorData = function () {
+  return this.armor_data;
+};
+
+ItemClass.prototype.isArmor = function () {
+  if (this.getArmorData () != null) {
+    return true;
+  }
+  return false;
+};
+
+ItemClass.prototype.getCovers = function () {
+  var covers = [];
+  if (this.isArmor ()) {
+    covers = this.getArmorData ().covers;
+  }
+  return covers;
+};
+
+ItemClass.prototype.getStorage = function () {
+  var storage = 0;
+  if (this.isArmor ()) {
+    storage = this.getArmorData ().storage;
+  }
+  return storage;
+};
+
+ItemClass.prototype.getEncumbrance = function () {
+  var encumbrance = 0;
+  if (this.isArmor ()) {
+    encumbrance = this.getArmorData ().encumbrance;
+  }
+  return encumbrance;
+};
+
+ItemClass.prototype.getWarmth = function () {
+  var warmth = 0;
+  if (this.isArmor ()) {
+    var warmth = this.getArmorData ().warmth;
+  }
+  return warmth;
+};
+
+ItemClass.prototype.getCoverage = function () {
+  var coverage = 0;
+  if (this.isArmor ()) {
+    coverage = this.getArmorData ().coverage;
+  }
+  return coverage;
+};
+
+ItemClass.prototype.getEnvironmentalProtection = function () {
+  var environmental_protection = 0;
+  if (this.isArmor ()) {
+    environmental_protection = this.getArmorData ().environmental_protection;
+  }
+  return environmental_protection;
+};
+
+ItemClass.prototype.getMaterialThickness = function () {
+  var material_thickness = 0;
+  if (this.isArmor ()) {
+    material_thickness = this.getArmorData ().material_thickness;
+  }
+  return material_thickness;
+};
+
+ItemClass.prototype.getBashResist = function () {
+  var bash_resist = 0;
+  if (this.isArmor ()) {
+    for (m of this.getMaterialInstance ()) {
+      bash_resist += m.getBashResist ();
+    }
+    bash_resist /= this.getMaterialInstance ().length;
+    bash_resist *= this.getMaterialThickness ();
+    bash_resist = Math.round (bash_resist);
+  }
+  return bash_resist;
+};
+
+ItemClass.prototype.getCutResist = function () {
+  var cut_resist = 0;
+  if (this.isArmor ()) {
+    for (m of this.getMaterialInstance ()) {
+      cut_resist += m.getCutResist ();
+    }
+    cut_resist /= this.getMaterialInstance ().length;
+    cut_resist *= this.getMaterialThickness ();
+    cut_resist = Math.round (cut_resist);
+  }
+  return cut_resist;
+};
+
+ItemClass.prototype.getAcidResist = function () {
+  var acid_resist = 0;
+  if (this.isArmor ()) {
+    for (m of this.getMaterialInstance ()) {
+      acid_resist += m.getAcidResist ();
+    }
+    acid_resist /= this.getMaterialInstance ().length;
+    if (this.getEnvironmentalProtection () < 10) {
+      acid_resist *= this.getEnvironmentalProtection ();
+      acid_resist /= 10;
+    }
+    acid_resist = Math.round (acid_resist);
+  }
+  return acid_resist;
+};
+
+ItemClass.prototype.getFireResist = function () {
+  var fire_resist = 0;
+  if (this.isArmor ()) {
+    for (m of this.getMaterialInstance ()) {
+      fire_resist += m.getFireResist ();
+    }
+    fire_resist /= this.getMaterialInstance ().length;
+    if (this.getEnvironmentalProtection () < 10) {
+      fire_resist *= this.getEnvironmentalProtection ();
+      fire_resist /= 10;
+    }
+    fire_resist = Math.round (fire_resist);
+    return fire_resist;
+  }
+  return fire_resist;
 };
 
 ItemClass.prototype.dumpArmorData = function () {
