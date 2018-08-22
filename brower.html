@@ -32,6 +32,9 @@
       if (item_data.isArmor()) {
         string_html += item_data.dumpArmorData() + '<br>';
       }
+      if (item_data.isGun()) {
+        string_html += item_data.dumpGunData() + '<br>';
+      }
       string_html += item_data.getDescription() + '<br>';
 
       string_html += "</p>";

@@ -18,7 +18,7 @@ function convert_volume (volume) {
   return volume;
 }
 
-function load_from_json(data, slot, jo, base_slot){
+function load_from_json (data, slot, jo, base_slot) {
   slot[data.name] = data.failsafe;
   if (base_slot) {
     slot[data.name] = base_slot[data.name];
@@ -28,7 +28,7 @@ function load_from_json(data, slot, jo, base_slot){
   }
 }
 
-function load_list_from_json(data, slot, jo, base_slot){
+function load_list_from_json (data, slot, jo, base_slot) {
   slot[data.name] = data.failsafe;
   if (base_slot) {
     slot[data.name] = base_slot[data.name];
@@ -134,20 +134,22 @@ ItemClass.prototype.init = function () {
   ];
 
   for (v of variables) {
-    load_from_json(v, this, this.json, base);
+    load_from_json (v, this, this.json, base);
   }
 
   for (v of lists) {
-    load_list_from_json(v, this, this.json, base);
+    load_list_from_json (v, this, this.json, base);
   }
 
   this['volume'] = convert_volume (this['volume']);
 
   this.initArmorData ();
+  this.initGunData ();
 };
 
 ItemClass.prototype.initArmorData = function () {
-  this.armor_data = null;
+  var slot_name = 'armor_data';
+  this[slot_name] = null;
 
   var base = this.getCopyFrom ();
   var variables = [
@@ -160,34 +162,90 @@ ItemClass.prototype.initArmorData = function () {
     {name: 'storage', failsafe: 0},
     {name: 'power_armor', failsafe: false},
   ];
-  var lists = [
-    {name: 'covers', failsafe: []},
-  ];
+  var lists = [{name: 'covers', failsafe: []}];
 
   var jo = null;
   if (this.getType () == const_type_armor) {
     jo = this.json;
-  } else if (this.json.armor_data) {
-    jo = this.json.armor_data;
+  } else if (this.json[slot_name]) {
+    jo = this.json[slot_name];
   }
   if (jo == null) {
     return;
   }
 
   var slot = {};
-  var base_slot = base ? base.armor_data : null;
+  var base_slot = base ? base[slot_name] : null;
 
   for (v of variables) {
-    load_from_json(v, slot, jo, base_slot);
+    load_from_json (v, slot, jo, base_slot);
   }
 
   for (v of lists) {
-    load_list_from_json(v, slot, jo, base_slot);
+    load_list_from_json (v, slot, jo, base_slot);
   }
 
   slot['storage'] = convert_volume (slot['storage']);
 
-  this.armor_data = slot;
+  this[slot_name] = slot;
+};
+
+ItemClass.prototype.initGunData = function () {
+  var slot_name = 'gun_data';
+  this[slot_name] = null;
+
+  var base = this.getCopyFrom ();
+  var variables = [
+    {name: 'skill', failsafe: null},
+    {name: 'ammo', failsafe: null},
+    {name: 'range', failsafe: 0},
+    {name: 'ranged_damage', failsafe: null},
+    {name: 'pierce', failsafe: 0},
+    {name: 'dispersion', failsafe: 0},
+    {name: 'sight_dispersion', failsafe: 30},
+    {name: 'recoil', failsafe: false},
+    {name: 'handling', failsafe: false},
+    {name: 'durability', failsafe: false},
+    {name: 'burst', failsafe: false},
+    {name: 'loudness', failsafe: -1},
+    {name: 'clip_size', failsafe: 0},
+    {name: 'reload', failsafe: 0},
+    {name: 'reload_noise', failsafe: 'click.'},
+    {name: 'reload_noise_volume', failsafe: 0},
+    {name: 'barrel_length', failsafe: 0},
+    {name: 'ups_charges', failsafe: 0},
+    {name: 'reload_noise_volume', failsafe: 0},
+  ];
+  var lists = [
+    {name: 'built_in_mods', failsafe: []},
+    {name: 'default_mods', failsafe: []},
+    {name: 'ammo_effects', failsafe: []},
+    {name: 'valid_mod_locations', failsafe: [], set_after_clear: true},
+    {name: 'modes', failsafe: []},
+  ];
+
+  var jo = null;
+  if (this.getType () == 'GUN') {
+    jo = this.json;
+  } else if (this.json[slot_name]) {
+    jo = this.json[slot_name];
+  }
+  if (jo == null) {
+    return;
+  }
+
+  var slot = {};
+  var base_slot = base ? base[slot_name] : null;
+
+  for (v of variables) {
+    load_from_json (v, slot, jo, base_slot);
+  }
+
+  for (v of lists) {
+    load_list_from_json (v, slot, jo, base_slot);
+  }
+
+  this[slot_name] = slot;
 };
 
 ItemClass.prototype.getName = function () {
@@ -483,6 +541,21 @@ ItemClass.prototype.dumpArmorData = function () {
     string_html += '耐酸防御: ' + this.getAcidResist () + ' ';
     string_html += '耐火防御: ' + this.getFireResist () + ' <br>';
     string_html += '環境防護: ' + this.getEnvironmentalProtection () + '<br>';
+  }
+  return string_html;
+};
+
+ItemClass.prototype.isGun = function () {
+  if (this.gun_data) {
+    return true;
+  }
+  return false;
+};
+
+ItemClass.prototype.dumpGunData = function () {
+  var string_html = '';
+  if (this.gun_data) {
+    string_html += '適用スキル: ' + this.gun_data.skill + '<br>';
   }
   return string_html;
 };
