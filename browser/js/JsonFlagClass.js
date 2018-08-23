@@ -1,4 +1,4 @@
-function internal_get_json_flag_from_id (key_id) {
+function internal_get_json_flag_from_id(key_id) {
   for (var flag of mod_flags) {
     if (flag.id) {
       if (flag.id == key_id) {
@@ -16,12 +16,12 @@ function internal_get_json_flag_from_id (key_id) {
   return null;
 }
 
-JsonFlagClass = function (id) {
+JsonFlagClass = function(id) {
   this.id = id;
-  this.json = internal_get_json_flag_from_id (this.id);
+  this.json = internal_get_json_flag_from_id(this.id);
 };
 
-JsonFlagClass.prototype.getInfo = function (id) {
+JsonFlagClass.prototype.getInfo = function(id) {
   if (!this.json) {
     return null;
   }
