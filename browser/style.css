@@ -2,6 +2,7 @@ BODY {
   margin: 0;
   padding: 0px 0px 0px 270px;
   background-color: #000000;
+  color: #ffffff;
 }
 
 * html body {
@@ -26,7 +27,6 @@ div#Left_area {
 div#Right_area {
   padding: 10px;
   background-color: #000000;
-  color: #ffffff;
 }
 
 * html div#Right_area {
@@ -48,4 +48,8 @@ a:focus {
   outline: thin dotted;
   outline: 5px auto -webkit-focus-ring-color;
   outline-offset: -2px;
+}
+
+header {
+  width: 100%;
 }

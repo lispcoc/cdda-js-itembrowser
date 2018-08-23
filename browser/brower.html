@@ -15,6 +15,12 @@
     var key_id = "";
     var mode = "show_item";
 
+    $(function () {
+      $(document).on("keypress", "input:not(.allow_submit)", function (event) {
+        return event.which !== 13;
+      });
+    });
+
     function conv_to_array(obj) {
       if (!Array.isArray(obj)) {
         var new_array = [obj];
@@ -118,23 +124,23 @@
     }
 
     function update_data() {
-      $('#Right_area').empty();
+      $('#item_info').empty();
       if (mode == "show_item") {
         var item_data = new ItemClass(key_id);
         var recipe_list = new RecipeListClass(key_id);
         console.log(JSON.stringify(item_data));
         console.log(JSON.stringify(recipe_list));
 
-        $('#Right_area').append(item_data_html(key_id));
-        $('#Right_area').append(item_recipe_html(key_id));
-        $('#Right_area').append("<h3>JSON</h3>");
-        $('#Right_area').append("<h4>Item</h3>");
-        $('#Right_area').append(JSON.stringify(item_data.getJson()));
-        $('#Right_area').append("<h4>Recipes</h3>");
+        $('#item_info').append(item_data_html(key_id));
+        $('#item_info').append(item_recipe_html(key_id));
+        $('#item_info').append("<h3>JSON</h3>");
+        $('#item_info').append("<h4>Item</h3>");
+        $('#item_info').append(JSON.stringify(item_data.getJson()));
+        $('#item_info').append("<h4>Recipes</h3>");
         var i = 0;
         r = recipe_list.getRecipe(i);
         while (r) {
-          $('#Right_area').append(JSON.stringify(r.getJson()));
+          $('#item_info').append(JSON.stringify(r.getJson()));
           i++;
           r = recipe_list.getRecipe(i);
         }
@@ -183,6 +189,8 @@
     </div>
   </div>
   <div id="Right_area">
+    <div id="item_info">
+    </div>
   </div>
 </body>
 
