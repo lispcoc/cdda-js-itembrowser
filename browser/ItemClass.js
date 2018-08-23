@@ -566,10 +566,14 @@ ItemClass.prototype.dumpGunData = function () {
     string_html += '弾薬: ' + this.gun_data.ammo + '<br>';
     string_html += '射程距離: ' + this.gun_data.range + '<br>';
     string_html += 'ダメージ: ';
-    if (typeof this.gun_data.ranged_damage != "object") {
+    if (typeof this.gun_data.ranged_damage != 'object') {
       string_html += this.gun_data.ranged_damage;
     } else {
-      string_html += this.gun_data.ranged_damage.damage_type + '(' + this.gun_data.ranged_damage.amount + ')';
+      string_html +=
+        this.gun_data.ranged_damage.damage_type +
+        '(' +
+        this.gun_data.ranged_damage.amount +
+        ')';
     }
     string_html += '<br>';
     string_html += '貫通力: ' + this.gun_data.pierce + '<br>';
@@ -593,7 +597,6 @@ ItemClass.prototype.dumpGunData = function () {
       string_html += mode[1] + '(' + mode[2] + '発), ';
     }
     string_html += '<br>';
-
   }
   return string_html;
 };
