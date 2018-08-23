@@ -121,7 +121,7 @@ local mod_materials = {}
 local flags = {}
 local mod_flags = {}
 
-local list = io.open("list.txt")
+local list = io.open("rsc/list.txt")
 local filepath = list:read()
 
 while filepath do
@@ -158,7 +158,7 @@ while filepath do
 end
 io.close(list)
 
-list = io.open("list_mod.txt")
+list = io.open("rsc/list_mod.txt")
 filepath = list:read()
 
 while filepath do
@@ -195,7 +195,7 @@ while filepath do
 end
 io.close(list)
 
-io.output("data.js")
+io.output("rsc/data.js")
 
 io.write("var items = ")
 io.write(json.encode(items))
