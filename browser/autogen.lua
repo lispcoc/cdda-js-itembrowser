@@ -158,42 +158,75 @@ while filepath do
 end
 io.close(list)
 
+local valid_mod = nil
+local modlist = io.open("modlist.json")
+if modlist then
+  valid_mod = json.decode(modlist:read("*a"))
+end
+io.close(modlist)
+local mod_path = {}
+
 list = io.open("rsc/list_mod.txt")
 filepath = list:read()
 
 while filepath do
-  local jsonfile = io.open(filepath)
-  if jsonfile then
-    print("Processing : " .. filepath)
-    local data = json.decode(jsonfile:read("*a"))
-    for key, val in pairs(data) do
-      if type(val) == "table" then
-        local type_val = val["type"]
-        local new_val
-        if is_item_type(type_val) then
-          -- langage update
-          new_val = translate_table(lang_data, val)
-          table.insert(mod_items, new_val)
-        elseif is_recipe_type(type_val) then
-          new_val = translate_table(lang_data, val)
-          table.insert(mod_recipes, new_val)
-        elseif is_requirement_type(type_val) then
-          new_val = translate_table(lang_data, val)
-          table.insert(mod_requirements, new_val)
-        elseif is_material_type(type_val) then
-          new_val = translate_table(lang_data, val)
-          table.insert(mod_materials, new_val)
-        elseif is_flag_type(type_val) then
-          new_val = translate_table(lang_data, val)
-          table.insert(mod_flags, new_val)
+  if string.match(filepath, "[\\/]modinfo.json$") then
+    local jsonfile = io.open(filepath)
+    if jsonfile then
+      local data = json.decode(jsonfile:read("*a"))
+      for _, val in pairs(data) do
+        if type(val) == "table" then
+          if val["type"] == "MOD_INFO" then
+            mod_path[val["ident"]] = string.match(filepath, "(.+)[\\/]+modinfo.json$")
+          end
         end
       end
     end
+    io.close(jsonfile)
   end
-  io.close(jsonfile)
   filepath = list:read()
 end
 io.close(list)
+
+for _, mod_ident in pairs(valid_mod) do
+  list = io.open("rsc/list_mod.txt")
+  filepath = list:read()
+  while filepath do
+    if mod_path[mod_ident] == string.sub(filepath, 1, string.len(mod_path[mod_ident])) then
+      local jsonfile = io.open(filepath)
+      if jsonfile then
+        print("Processing : " .. filepath)
+        local data = json.decode(jsonfile:read("*a"))
+        for key, val in pairs(data) do
+          if type(val) == "table" then
+            local type_val = val["type"]
+            local new_val
+            if is_item_type(type_val) then
+              -- langage update
+              new_val = translate_table(lang_data, val)
+              table.insert(mod_items, new_val)
+            elseif is_recipe_type(type_val) then
+              new_val = translate_table(lang_data, val)
+              table.insert(mod_recipes, new_val)
+            elseif is_requirement_type(type_val) then
+              new_val = translate_table(lang_data, val)
+              table.insert(mod_requirements, new_val)
+            elseif is_material_type(type_val) then
+              new_val = translate_table(lang_data, val)
+              table.insert(mod_materials, new_val)
+            elseif is_flag_type(type_val) then
+              new_val = translate_table(lang_data, val)
+              table.insert(mod_flags, new_val)
+            end
+          end
+        end
+      end
+      io.close(jsonfile)
+    end
+    filepath = list:read()
+  end
+  io.close(list)
+end
 
 io.output("rsc/data.js")
 
