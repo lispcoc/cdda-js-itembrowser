@@ -1,6 +1,4 @@
 BODY {
-  margin: 0;
-  padding: 0px 0px 0px 270px;
   background-color: #000000;
   color: #ffffff;
 }
@@ -13,23 +11,26 @@ div {
   font-size: 14px;
 }
 
-div#Left_area {
-  padding: 10px;
-  position: fixed !important;
-  position: absolute;
-  top: 0;
-  left: 0;
+div.Main {
+  display: none;
+  width: 100%;
+  height: calc(100% - 60px);
+}
+
+div.active {
+  display: block;
+}
+
+div.LeftArea {
+  float: left;
   width: 240px;
   height: 100%;
   overflow: auto;
 }
 
-div#Right_area {
-  padding: 10px;
+div.RightArea {
+  padding-left: 10px;
   background-color: #000000;
-}
-
-* html div#Right_area {
   height: 100%;
   overflow: auto;
 }
@@ -52,4 +53,24 @@ a:focus {
 
 header {
   width: 100%;
+}
+
+table, th, td {
+  border-collapse: collapse;
+  border: 1px solid #ccc;
+  line-height: 1.5;
+}
+
+th.header {
+  background-image: url(img/white-unsorted.gif);
+  background-repeat: no-repeat;
+  background-position: center right;
+}
+
+th.headerSortUp {
+  background-image: url(img/white-asc.gif);
+}
+
+th.headerSortDown {
+  background-image: url(img/white-desc.gif);
 }

@@ -4,6 +4,8 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <link rel="stylesheet" type="text/css" href="style.css" />
   <script src="js/jquery-3.0.0.min.js"></script>
+  <script type="text/javascript" src="js/jquery.tablesorter.min.js"></script>
+  <script type="text/javascript" src="js/jquery.tinysort.min.js"></script>
   <script type="text/javascript" src="rsc/data.js"></script>
   <script type="text/javascript" src="js/cdda.js"></script>
   <script type="text/javascript" src="js/JsonFlagClass.js"></script>
@@ -12,22 +14,12 @@
   <script type="text/javascript" src="js/RequirementClass.js"></script>
   <script type="text/javascript" src="js/RecipeClass.js"></script>
   <script type="text/javascript">
-    var key_id = "";
-    var mode = "show_item";
-
     $(function () {
       $(document).on("keypress", "input:not(.allow_submit)", function (event) {
-        return event.which !== 13;
+        return event.which != 13;
       });
     });
-
-    function conv_to_array(obj) {
-      if (!Array.isArray(obj)) {
-        var new_array = [obj];
-        return new_array;
-      }
-      return obj;
-    }
+    var melee_list_cache = false;
 
     function item_data_html(id) {
       var string_html = "";
@@ -123,33 +115,26 @@
       return string_html;
     }
 
-    function update_data() {
-      $('#item_info').empty();
-      if (mode == "show_item") {
-        var item_data = new ItemClass(key_id);
-        var recipe_list = new RecipeListClass(key_id);
-        console.log(JSON.stringify(item_data));
-        console.log(JSON.stringify(recipe_list));
-
-        $('#item_info').append(item_data_html(key_id));
-        $('#item_info').append(item_recipe_html(key_id));
-        $('#item_info').append("<h3>JSON</h3>");
-        $('#item_info').append("<h4>Item</h3>");
-        $('#item_info').append(JSON.stringify(item_data.getJson()));
-        $('#item_info').append("<h4>Recipes</h3>");
-        var i = 0;
-        r = recipe_list.getRecipe(i);
-        while (r) {
-          $('#item_info').append(JSON.stringify(r.getJson()));
-          i++;
-          r = recipe_list.getRecipe(i);
-        }
-      }
-    }
-
     function select_item(key) {
-      key_id = key;
-      update_data();
+      $('#item_info').empty();
+      var item_data = new ItemClass(key);
+      var recipe_list = new RecipeListClass(key);
+      console.log(JSON.stringify(item_data));
+      console.log(JSON.stringify(recipe_list));
+
+      $('#item_info').append(item_data_html(key));
+      $('#item_info').append(item_recipe_html(key));
+      $('#item_info').append("<h3>JSON</h3>");
+      $('#item_info').append("<h4>Item</h3>");
+      $('#item_info').append(JSON.stringify(item_data.getJson()));
+      $('#item_info').append("<h4>Recipes</h3>");
+      var i = 0;
+      r = recipe_list.getRecipe(i);
+      while (r) {
+        $('#item_info').append(JSON.stringify(r.getJson()));
+        i++;
+        r = recipe_list.getRecipe(i);
+      }
     }
 
     function search_data() {
@@ -174,22 +159,101 @@
         }
       }
     }
-  </script>
-  <script type="text/javascript">
+
+    function select_tab(id) {
+      $('.js-tab-content > .Main').removeClass('active');
+      $('.js-tab-content > .Main[id*=' + id + ']').addClass('active');
+      if (id == "MeleeList" && !melee_list_cache) {
+        update_melee_list();
+        melee_list_cache = true;
+      }
+    }
+
+    $(function () {
+      select_tab("ItemSearch");
+    });
+
+    $(document).ready(function () {
+      $(".sortable").tablesorter();
+    });
+
+    function update_melee_list() {
+      function generate_row(item) {
+        var string_html = "";
+        if (item.bashing + item.cutting > 10 && item.to_hit > -2) {
+          string_html += "<tr>";
+          string_html += '<td>' + item.displayNameWithSymbol() + '</td>';
+          string_html += '<td>' + item.bashing + '</td>';
+          string_html += '<td>' + item.cutting + '</td>';
+          string_html += '<td>' + (item.bashing + item.cutting) + '</td>';
+          string_html += '<td>' + item.getAtkCost() + '</td>';
+          string_html += '<td>' + ((item.bashing + item.cutting) / item.getAtkCost()).toFixed(3); + '</td>';
+          string_html += '<td>' + item.to_hit + '</td>';
+          string_html += '</tr>';
+        }
+        return string_html;
+      }
+      $('#MeleeListTable').empty()
+      var string_html = "";
+      for (var item of items) {
+        if (item.id) {
+          var item = new ItemClass(item.id);
+          string_html += generate_row(item);
+        }
+      }
+      for (var item of mod_items) {
+        if (item.id) {
+          var item = new ItemClass(item.id);
+          string_html += generate_row(item);
+        }
+      }
+      $('#MeleeListTable').prepend(string_html);
+      $(".sortable").trigger("update");
+    }
+
   </script>
 </head>
 
 <body>
 
-  <div id="Left_area">
-    <form name="search">
-      <input type="text" name="textbox" onkeyup="search_data()" placeholder="検索キーワードを入力してください">
-    </form>
-    <div id="search_result">
-    </div>
-  </div>
-  <div id="Right_area">
-    <div id="item_info">
+  <div class="js-tab">
+    <header class="js-tab-title">
+      <span><a href='javascript:select_tab("ItemSearch")'>アイテム検索</a></span>
+      <span><a href='javascript:select_tab("MeleeList")'>近接武器リスト</a></span>
+    </header>
+
+    <div class=js-tab-content>
+      <div class="Main active" id="ItemSearch">
+        <div class="LeftArea">
+          <form name="search">
+            <input type="text" name="textbox" onkeyup="search_data()" placeholder="検索キーワードを入力してください">
+          </form>
+          <div id="search_result">
+          </div>
+        </div>
+        <div class="RightArea">
+          <div id="item_info">
+          </div>
+        </div>
+      </div>
+
+      <div class="Main" id="MeleeList">
+        <span id="MeleeListProcess"></span>
+        <table class="sortable">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th><span title="Volume">Bash</span></th>
+              <th><span title="Weight">Cut/Stab</span></th>
+              <th><span title="Moves per attack">Total</span></th>
+              <th><span title="Bashing+Cutting">Cost</span></th>
+              <th><span title="Damage per move">DPS</span></th>
+              <th><span title="To-Hit">To-Hit</span></th>
+            </tr>
+          </thead>
+          <tbody id="MeleeListTable"></tbody>
+        </table>
+      </div>
     </div>
   </div>
 </body>

@@ -73,7 +73,10 @@ ItemClass = function(item_id, nested = 0) {
   this.id = item_id;
   this.json = internal_get_item_from_id(this.id, nested);
   this.nested = nested;
-  this.init();
+  this.valid = this.json != null;
+  if (this.valid) {
+    this.init();
+  }
 };
 
 ItemClass.prototype.getJson = function() {
@@ -335,16 +338,21 @@ ItemClass.prototype.isConductive = function() {
   return false;
 };
 
-ItemClass.prototype.dumpBasicData = function() {
-  var string_html = "";
-  string_html +=
-    "<h2><font color=" +
+ItemClass.prototype.displayNameWithSymbol = function() {
+  var string_html =
+    "<font color=" +
     this.getSymbolColor() +
     ">" +
     this.getSymbol() +
     "</font> " +
-    this.getName() +
-    "</h3>";
+    this.getName();
+
+  return string_html;
+};
+
+ItemClass.prototype.dumpBasicData = function() {
+  var string_html = "";
+  string_html += "<h2>" + this.displayNameWithSymbol() + "</h3>";
   string_html += "<p>";
   string_html += "id: " + this.getId() + "<br>";
   string_html += "容積: " + this.getVolume() * 0.25 + " L<br>";
