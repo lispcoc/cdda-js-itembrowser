@@ -6,6 +6,7 @@
   <script src="js/jquery-3.0.0.min.js"></script>
   <script type="text/javascript" src="js/jquery.tablesorter.min.js"></script>
   <script type="text/javascript" src="js/jquery.tinysort.min.js"></script>
+  <script type="text/javascript" src="js/Transrate.js"></script>
   <script type="text/javascript" src="rsc/data.js"></script>
   <script type="text/javascript" src="js/cdda.js"></script>
   <script type="text/javascript" src="js/JsonFlagClass.js"></script>
@@ -28,11 +29,11 @@
 
       string_html += item_data.dumpBasicData() + '<br>';
       if (item_data.isArmor()) {
-        string_html += "<h3>装備データ</h3>";
+        string_html += "<h3>" + Tr("装備データ") + "</h3>";
         string_html += item_data.dumpArmorData() + '<br>';
       }
       if (item_data.isGun()) {
-        string_html += "<h3>射撃データ</h3>";
+        string_html += "<h3>" + Tr("射撃データ") + "</h3>";
         string_html += item_data.dumpGunData() + '<br>';
       }
       string_html += item_data.getDescription() + '<br>';
@@ -46,17 +47,17 @@
     }
 
     function item_recipe_html(id) {
-      var string_html = "<h3>レシピ</h3>";
+      var string_html = "<h3>" + Tr("レシピ") + "</h3>";
       var recipe_list = new RecipeListClass(id);
       string_html += "<p>";
       if (!recipe_list.getRecipe(0)) {
-        string_html += "レシピはありません。"
+        string_html += Tr("レシピはありません。");
       } else {
         for (var recipe_num = 0; recipe_list.getRecipe(recipe_num); recipe_num++) {
-          string_html += "<h4>レシピ" + (recipe_num + 1) + "</h4>";
+          string_html += "<h4>" + Tr("レシピ") + (recipe_num + 1) + "</h4>";
           var recipe_data = recipe_list.getRecipe(recipe_num);
-          string_html += "適用スキル: " + recipe_data.getSkillUsed() + "<br>";
-          string_html += "必要スキル: ";
+          string_html += Tr("適用スキル") + ": " + recipe_data.getSkillUsed() + "<br>";
+          string_html += Tr("必要スキル") + ": ";
           if (recipe_data.getSkillsRequired()) {
             for (var r of recipe_data.getSkillsRequired()) {
               if (r[0]) {
@@ -65,10 +66,10 @@
             }
           }
           string_html += "<br>";
-          string_html += "難易度: " + recipe_data.getDifficulty() + "<br>";
-          string_html += "完了まで " + (recipe_data.getTime() / 1000) + " 分<br>";
+          string_html += Tr("難易度") + ": " + recipe_data.getDifficulty() + "<br>";
+          string_html += Tr("完了まで") + ": " + (recipe_data.getTime() / 1000) + " " + Tr("分") + "<br>";
           for (var q of recipe_data.getQualities()) {
-            string_html += "レベル " + q.level + " の " + q.id + " 性能<br>";
+            string_html += Tr("レベル $1 の $2 性能", q.level, q.id) + "<br>";
           }
           for (var t of recipe_data.getTools()) {
             string_html += "&gt;";
@@ -78,7 +79,7 @@
                 var item = new ItemClass(t[i][0]);
                 var charges = t[i][1];
                 string_html += link_to_item(item.getName(), item.getId());
-                string_html += charges != -1 ? "(充填量: " + charges + ")" : "";
+                string_html += charges != -1 ? Tr("(充填量: $1)", charges) : "";
                 if (t.length - 1 > i) {
                   string_html += " または ";
                 } else {
@@ -93,9 +94,9 @@
               if (c[i][0]) {
                 var item = new ItemClass(c[i][0]);
                 var charges = c[i][1];
-                string_html += charges + " 個の " + link_to_item(item.getName(), item.getId());
+                string_html += Tr("$1 個の $2", charges, link_to_item(item.getName(), item.getId()));
                 if (c.length - 1 > i) {
-                  string_html += " または ";
+                  string_html += Tr(" または ");
                 } else {
                   string_html += "<br>";
                 }
