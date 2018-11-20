@@ -1,57 +1,4 @@
-var TranstateTable = [
-  {
-    id: "装備データ",
-    msg: "Armor Data"
-  },
-  {
-    id: "射撃データ",
-    msg: "Ranged Data"
-  },
-  {
-    id: "レシピ",
-    msg: "Recipe"
-  },
-  {
-    id: "レシピはありません。",
-    msg: "There is no recipe."
-  },
-  {
-    id: "適用スキル",
-    msg: "Skill used"
-  },
-  {
-    id: "必要スキル",
-    msg: "Required skills"
-  },
-  {
-    id: "完了まで",
-    msg: "Time to complete"
-  },
-  {
-    id: "分",
-    msg: "minutes"
-  },
-  {
-    id: "レベル $1 の $2 性能",
-    msg: "Tool with $2 quality of $1."
-  },
-  {
-    id: "(充填量: $1)",
-    msg: "($1 charges)"
-  },
-  {
-    id: "$1 個の $2",
-    msg: "$1x $2"
-  },
-  {
-    id: " または ",
-    msg: " or "
-  },
-  {
-    id: "難易度",
-    msg: "Difficulty"
-  }
-];
+var TranstateTable = {};
 
 function Tr(id) {
   var val = [];
@@ -61,10 +8,15 @@ function Tr(id) {
       val.push(arguments[i]);
     }
   }
-  for (var t of TranstateTable) {
-    if (t.id == id) {
-      msg = t.msg;
-      break;
+  if (!env_lang) {
+    env_lang = "ja";
+  }
+  if (TranstateTable[env_lang]) {
+    for (var t of TranstateTable[env_lang]) {
+      if (t.id == id) {
+        msg = t.msg;
+        break;
+      }
     }
   }
   var num = 1;
