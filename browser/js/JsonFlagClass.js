@@ -25,5 +25,10 @@ JsonFlagClass.prototype.getInfo = function(id) {
   if (!this.json) {
     return null;
   }
-  return this.json.info;
+    if (this.json.info) {
+    return this.json.info;
+  }
+  else if(this.json.description) {
+  return this.json.description;
+}
 };
