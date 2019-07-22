@@ -34,7 +34,7 @@ MaterialClass.prototype.getIdent = function() {
 
 MaterialClass.prototype.getName = function() {
   if (!this.name) {
-    this.name = "No name material";
+    this.name = Tr("No name material");
     if (this.json.name) {
       this.name = this.json.name;
     }

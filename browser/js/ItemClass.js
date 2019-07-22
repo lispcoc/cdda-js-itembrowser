@@ -1,4 +1,4 @@
-var const_type_armor = "ARMOR";
+var const_type_armor = ["ARMOR","TOOL_ARMOR"];
 
 function deep_copy(obj) {
   return JSON.parse(JSON.stringify(obj));
@@ -6,11 +6,12 @@ function deep_copy(obj) {
 
 function convert_volume(volume) {
   if (typeof volume == "string") {
-    var result = volume.match(/(\d+)(\w+)/);
-    if (result[2].toLowerCase() == "l") {
-      volume = result[1] * 4;
-    } else if (result[2].toLowerCase() == "ml") {
-      volume = result[1] / 250;
+    var result1 = volume.match(/[0-9]+/);//因为存在"200ml"与"500 ml"
+	 var result2 = volume.match(/[A-z]+/);
+    if (result2[0].toLowerCase() == "l") {
+      volume = result1[0] * 4;
+    } else if (result2[0].toLowerCase() == "ml") {
+      volume = result1[0] / 250;
     } else {
       volume = 0;
     }
@@ -126,14 +127,21 @@ ItemClass.prototype.init = function() {
     { name: "description", failsafe: "" },
     { name: "symbol", failsafe: "" },
     { name: "color", failsafe: "white" },
-    { name: "phase", failsafe: "SOLID" }
+    { name: "phase", failsafe: "SOLID" },
+	{ name: "capacity", failsafe: null },
+	{ name: "calories", failsafe: 0 },
+    { name: "quench", failsafe: 0 },
+    { name: "fun", failsafe: 0 },
+    { name: "healthy", failsafe: 0 },
+    { name: "spoils_in", failsafe: null }
   ];
   var lists = [
     { name: "emits", failsafe: [] },
     { name: "material", failsafe: [], set_after_clear: true },
     { name: "flags", failsafe: [] },
     { name: "qualities", failsafe: [] },
-    { name: "techniques", failsafe: [] }
+    { name: "techniques", failsafe: [] },
+	{ name: "ammo_type", failsafe: [] }
   ];
 
   for (v of variables) {
@@ -148,6 +156,7 @@ ItemClass.prototype.init = function() {
 
   this.initArmorData();
   this.initGunData();
+  this.initBookData();
 };
 
 ItemClass.prototype.initArmorData = function() {
@@ -168,11 +177,13 @@ ItemClass.prototype.initArmorData = function() {
   var lists = [{ name: "covers", failsafe: [] }];
 
   var jo = null;
-  if (this.getType() == const_type_armor) {
+  for (var typearmor of const_type_armor) {
+  if (this.getType() == typearmor) {
     jo = this.json;
   } else if (this.json[slot_name]) {
     jo = this.json[slot_name];
   }
+}
   if (jo == null) {
     return;
   }
@@ -200,7 +211,6 @@ ItemClass.prototype.initGunData = function() {
   var base = this.getCopyFrom();
   var variables = [
     { name: "skill", failsafe: null },
-    { name: "ammo", failsafe: null },
     { name: "range", failsafe: 0 },
     { name: "ranged_damage", failsafe: 0 },
     { name: "pierce", failsafe: 0 },
@@ -209,25 +219,27 @@ ItemClass.prototype.initGunData = function() {
     { name: "recoil", failsafe: 0 },
     { name: "handling", failsafe: 0 },
     { name: "durability", failsafe: false },
-    { name: "burst", failsafe: false },
-    { name: "loudness", failsafe: 0 },
-    { name: "clip_size", failsafe: 0 },
+    { name: "burst", failsafe: null },
+	{ name: "loudness", failsafe: 0 },
+    { name: "clip_size", failsafe: null },
     { name: "reload", failsafe: 0 },
     { name: "reload_noise", failsafe: "click." },
     { name: "reload_noise_volume", failsafe: 0 },
     { name: "barrel_length", failsafe: 0 },
-    { name: "ups_charges", failsafe: 0 }
+    { name: "ups_charges", failsafe: 0 },
+	{ name: "magazines", failsafe: null }
   ];
   var lists = [
     { name: "built_in_mods", failsafe: [] },
     { name: "default_mods", failsafe: [] },
     { name: "ammo_effects", failsafe: [] },
     { name: "valid_mod_locations", failsafe: [], set_after_clear: true },
-    { name: "modes", failsafe: [], set_after_clear: true }
+    { name: "modes", failsafe: [], set_after_clear: true },{ name: "ammo", failsafe: [] }
+    
   ];
 
   var jo = null;
-  if (this.getType() == "GUN") {
+  if (this.getType() == "AMMO"||this.getType() == "GUN") {
     jo = this.json;
   } else if (this.json[slot_name]) {
     jo = this.json[slot_name];
@@ -265,6 +277,9 @@ ItemClass.prototype.getSymbol = function() {
 ItemClass.prototype.getSymbolColor = function() {
   // todo: 背景色に対応する
   return this.color;
+};
+ItemClass.prototype.getminstrength = function() {
+  return this.min_strength;
 };
 
 ItemClass.prototype.getVolume = function() {
@@ -308,6 +323,10 @@ ItemClass.prototype.getMaterialInstance = function() {
     }
   }
   return this.material_instance;
+};
+
+ItemClass.prototype.getTechniques = function() {
+  return this.techniques;
 };
 
 ItemClass.prototype.getFlags = function() {
@@ -355,37 +374,88 @@ ItemClass.prototype.dumpBasicData = function() {
   string_html += "<h2>" + this.displayNameWithSymbol() + "</h3>";
   string_html += "<p>";
   string_html += "id: " + this.getId() + "<br>";
-  string_html += "容積: " + this.getVolume() * 0.25 + " L<br>";
-  string_html += "重量: " + this.getWeight() * 0.001 + " kg<br>";
-  string_html += "打撃: " + this.getBashing() + " ";
-  string_html += "斬撃: " + this.getCutting() + " ";
-  string_html += "命中ボーナス: " + this.getToHit() + "<br>";
-  string_html += "攻撃コスト: " + this.getAtkCost() + "<br>";
+  string_html += Tr("容積") + ": " + this.getVolume() * 0.25 + " L<br>";
+  string_html += Tr("重量") + ": " + this.getWeight() * 0.001 + " kg<br>";
+  string_html += Tr("打撃") + ": " + this.getBashing() + " ";
+   if (this.hasFlag("STAB") ||this.hasFlag("SPEAR") ) {
+    string_html += Tr("刺撃") + ": " + this.getCutting() + " ";
+  } 
+   else {
+     string_html += Tr("斬撃") + ": " + this.getCutting() + " ";
+    }  
+  string_html += Tr("命中ボーナス") + ": " + this.getToHit() + "<br>";
+  string_html += Tr("攻撃コスト") + ": " + this.getAtkCost() + "<br>";
 
-  string_html += "素材: ";
+  string_html += Tr("素材") + ": ";
   for (var mat of this.getMaterialInstance()) {
     if (mat) {
       string_html += mat.getName() + ", ";
     }
   }
   string_html += "<br>";
+if(this.getminstrength()>0){
+  string_html += Tr("力の要求") + ": " + this.getminstrength() + "<br>";
+}
 
+  if (this.getType() == "COMESTIBLE") {
+string_html += Tr("卡路里") + ": " + this.calories + "<br>";
+string_html += Tr("解渴") + ": " + this.quench + "<br>";		
+string_html += Tr("心情值") + ": " + this.fun + "<br>";		
+string_html += Tr("健康值") + ": " + this.healthy + "<br>";		
+string_html += Tr("保质期") + ": " + this.spoils_in + "<br>";				  
+  }
+       		if (this.capacity!=null){
+       string_html += Tr("弾容量") + ": " + this.capacity + "<br>";			
+		}
+  if (this.getType() == "AMMO"||this.getType() == "MAGAZINE") {
+       		if (this.ammo_type.length == 0){
+       string_html += Tr("弾薬") + ": " + this.ammo_type + "<br>";			
+		}
+		else {
+			string_html += Tr("弾薬") + ": " ;		
+			for (var tempammo of this.ammo_type) {
+		  if (tempammo) {		
+	        var am = new AmmunitiontypeClass(tempammo);
+             if (am) {
+              string_html += am.getName() + ", ";
+			  }
+			  else  {
+               string_html += am.id + ", ";
+                 }
+		}
+		}
+					string_html +=  "<br>";
+		  }
+
+  } 
   for (var q of this.getQualities()) {
     if (q) {
       if (q[0]) {
-        string_html += "レベル " + q[1] + " の " + q[0] + " 性能<br>";
+			   var s = new ToolqualityClass(q[0]);
+             if (s) {
+			  string_html += Tr("ありますレベル $1 の $2 性能", q[1], s.getName()) + "<br>";	 
+              }
+			  else  {
+                string_html += Tr("ありますレベル $1 の $2 性能", q[1], Tr(q[0])) + "<br>";
+                 }		  
+
       }
     }
   }
-
-  string_html += "技術: ";
-  for (var t of this.techniques) {
+if(this.getTechniques().length>0){
+  string_html += Tr("技術") + ": ";
+  for (var t of this.getTechniques()) {
     if (t) {
-      string_html += t + ", ";
-    }
+      var tt = new TechniqueClass(t);
+      if (tt) {
+        if (tt.getName()) {
+          string_html += tt.getName() + ": "+ tt.getInfo() + "; ";
+        }
+      }
+    }	  
   }
   string_html += "<br>";
-
+}
   string_html += "Flags: ";
   for (var flag_id of this.getFlags()) {
     if (flag_id) {
@@ -404,10 +474,16 @@ ItemClass.prototype.dumpBasicData = function() {
       }
     }
   }
+   if (this.hasFlag("REACH3") ) {
+    string_html += Tr("この品物は進められます長い遠距攻撃。") + "<br>";
+  } 
+   else if (this.hasFlag("REACH_ATTACK") ){
+     string_html += Tr("この品物は進められます遠距攻撃。") + "<br>";
+    } 
   if (this.isConductive()) {
-    string_html += "このアイテムは導電体です。<br>";
+    string_html += Tr("このアイテムは導電体です。") + "<br>";
   } else {
-    string_html += "このアイテムは絶縁体です。<br>";
+    string_html += Tr("このアイテムは絶縁体です。") + "<br>";
   }
 
   return string_html;
@@ -542,20 +618,20 @@ ItemClass.prototype.getFireResist = function() {
 ItemClass.prototype.dumpArmorData = function() {
   var string_html = "";
   if (this.isArmor()) {
-    string_html += "着用部位: ";
+    string_html += Tr("着用部位") + ": ";
     for (var part of this.getCovers()) {
       string_html += part + ", ";
     }
     string_html += "<br>";
-    string_html += "収納: " + this.getStorage() * 0.25 + " L<br>";
-    string_html += "動作制限: " + this.getEncumbrance() + " ";
-    string_html += "暖かさ: " + this.getWarmth() + " ";
-    string_html += "被覆率: " + this.getCoverage() + " %<br>";
-    string_html += "打撃防御: " + this.getBashResist() + " ";
-    string_html += "斬撃防御: " + this.getCutResist() + " <br>";
-    string_html += "耐酸防御: " + this.getAcidResist() + " ";
-    string_html += "耐火防御: " + this.getFireResist() + " <br>";
-    string_html += "環境防護: " + this.getEnvironmentalProtection() + "<br>";
+    string_html += Tr("収納") + ": " + this.getStorage() * 0.25 + " L<br>";
+    string_html += Tr("動作制限") + ": " + this.getEncumbrance() + " ";
+    string_html += Tr("暖かさ") + ": " + this.getWarmth() + " ";
+    string_html += Tr("被覆率") + ": " + this.getCoverage() + " %<br>";
+    string_html += Tr("打撃防御") + ": " + this.getBashResist() + " ";
+    string_html += Tr("斬撃防御") + ": " + this.getCutResist() + " <br>";
+    string_html += Tr("耐酸防御") + ": " + this.getAcidResist() + " ";
+    string_html += Tr("耐火防御") + ": " + this.getFireResist() + " <br>";
+    string_html += Tr("環境防護") + ": " + this.getEnvironmentalProtection() + "<br>";
   }
   return string_html;
 };
@@ -569,11 +645,50 @@ ItemClass.prototype.isGun = function() {
 
 ItemClass.prototype.dumpGunData = function() {
   var string_html = "";
-  if (this.gun_data) {
-    string_html += "適用スキル: " + this.gun_data.skill + "<br>";
-    string_html += "弾薬: " + this.gun_data.ammo + "<br>";
-    string_html += "射程距離: " + this.gun_data.range + "<br>";
-    string_html += "ダメージ: ";
+   if (this.gun_data!=null) {
+	if (this.gun_data.skill!=null) {
+     var s = new SkillClass(this.gun_data.skill);
+     if (s) {
+       string_html += Tr("適用スキル") + ": " + s.getName() + "<br>";
+        } 
+		}
+		
+       string_html += Tr("弾容量") + ": " + this.gun_data.clip_size + "<br>";	
+	   
+		if (this.gun_data.ammo.length == 0){
+       string_html += Tr("弾薬") + ": " + this.gun_data.ammo + "<br>";			
+		}
+		else {
+			string_html += Tr("弾薬") + ": " ;		
+			  for (var tempammo of this.gun_data.ammo) {
+				      if (tempammo) {
+	        var am = new AmmunitiontypeClass(tempammo);
+             if (am) {
+              string_html +=  am.getName() + ", ";
+			  }
+			  else  {
+               string_html += am.id + ", ";
+                 }
+			  }
+			  }
+			string_html +=  "<br>";
+		  }
+	if (this.gun_data.magazines!=null){	  
+    for (var mag of this.gun_data.magazines) {
+		string_html += Tr("弾夹")+ ": " ;
+		if (mag[1]){
+			 for (var tempmag of mag[1]) {
+			var tempitem = new ItemClass(tempmag);
+		string_html += link_to_item(tempitem.getName(), tempitem.getId()) +  " , ";	
+		}
+		}
+     
+    }
+	string_html += "<br>";
+	}
+		  
+		  string_html += Tr("射程距離") + ": " + this.gun_data.range + "<br>";
+    string_html += Tr("ダメージ") + ": ";
     if (typeof this.gun_data.ranged_damage != "object") {
       string_html += this.gun_data.ranged_damage;
     } else {
@@ -584,27 +699,171 @@ ItemClass.prototype.dumpGunData = function() {
         ")";
     }
     string_html += "<br>";
-    string_html += "貫通力: " + this.gun_data.pierce + "<br>";
-    string_html += "分散率: " + this.gun_data.dispersion + "<br>";
-    string_html += "照準分散: " + this.gun_data.sight_dispersion + "<br>";
-    string_html += "反動: " + this.gun_data.recoil + "<br>";
-    string_html += "操作性: " + this.gun_data.handling + "<br>";
-    string_html += "耐久: " + this.gun_data.durability + "<br>";
-    string_html += "発砲音: " + this.gun_data.loudness + "<br>";
-    string_html += "リロード時間: " + this.gun_data.reload + "<br>";
-    string_html += "リロード音: " + this.gun_data.reload_noise_volume + "<br>";
-    string_html += "銃身の長さ: " + this.gun_data.barrel_length + "<br>";
-    string_html += "消費電力: " + this.gun_data.ups_charges + "<br>";
-    string_html += "MOD: ";
+    string_html += Tr("貫通力") + ": " + this.gun_data.pierce + "<br>";
+    string_html += Tr("分散率") + ": " + this.gun_data.dispersion + "<br>";
+    string_html += Tr("照準分散") + ": " + this.gun_data.sight_dispersion + "<br>";
+    string_html += Tr("反動") + ": " + this.gun_data.recoil + "<br>";
+    string_html += Tr("操作性") + ": " + this.gun_data.handling + "<br>";
+    string_html += Tr("耐久") + ": " + this.gun_data.durability + "<br>";
+    string_html += Tr("発砲音") + ": " + this.gun_data.loudness + "<br>";
+    string_html += Tr("リロード時間") + ": " + this.gun_data.reload + "<br>";
+    string_html += Tr("リロード音") + ": " + this.gun_data.reload_noise_volume + "<br>";
+    string_html += Tr("銃身の長さ") + ": " + this.gun_data.barrel_length + "<br>";
+    string_html += Tr("消費電力") + ": " + this.gun_data.ups_charges + "<br>";
+    string_html += Tr("MOD") + ": ";
     for (var loc of this.gun_data.valid_mod_locations) {
-      string_html += loc + ", ";
+      string_html += Tr(loc[0]) + ","+loc[1]+ " ; ";
     }
     string_html += "<br>";
-    string_html += "MODES: ";
+    string_html += Tr("MODES") + ": ";
+
+	
     for (var mode of this.gun_data.modes) {
-      string_html += mode[1] + "(" + mode[2] + "発), ";
+      string_html += mode[1] + "(" + mode[2] + Tr("発") + "), ";
     }
+	if (this.gun_data.modes.length == 0) {
+		if (this.gun_data.burst != null) {
+		string_html += "burst" + "(" + this.gun_data.burst + Tr("発") + "), ";
+	}		
+	else{
+		string_html += Tr("手動/半自動")+ "(1" + Tr("発")+ "), ";
+	}
+	}	
     string_html += "<br>";
+
+  }
+  return string_html;
+};
+
+ ItemClass.prototype.initBookData = function() {
+  var slot_name = "book_data";
+  this[slot_name] = null;
+
+  var base = this.getCopyFrom();
+  var variables = [
+    { name: "intelligence", failsafe: 0 },
+    { name: "skill", failsafe: null },
+    { name: "required_level", failsafe: 0 },
+    { name: "max_level", failsafe: 0 },
+    { name: "fun", failsafe: 0 },
+    { name: "chapters", failsafe: 1 },
+    { name: "time", failsafe: 0 },
+    { name: "martial_art", failsafe: null },
+	{ name: "relative", failsafe: null }
+  ];
+  var lists = [
+    
+	];
+
+  var jo = null;
+  if (this.getType() == "BOOK") {
+  //if (this.getType() == "BOOK"||this.getType() == "GENERIC") {
+    jo = this.json;
+  } else if (this.json[slot_name]) {
+    jo = this.json[slot_name];
+  }
+  if (jo == null) {
+    return;
+  }
+
+  var slot = {};
+  var base_slot = base ? base[slot_name] : null;
+
+  for (v of variables) {
+    load_from_json(v, slot, jo, base_slot);
+  }
+
+  for (v of lists) {
+    load_list_from_json(v, slot, jo, base_slot);
+  }
+  //slot["time"] = convert_booktime(slot["time"]);
+  this[slot_name] = slot;
+};
+
+function convert_booktime(temptime) {
+	var time=temptime
+  if (typeof time == "string") {
+    var result1 = time.match(/[0-9]+/);
+	var result2 = time.match(/[A-z]+/);
+    if (result2[0].toLowerCase() == "m") {
+      time = result1[0]*1;
+    } else if (result2[0].toLowerCase() == "h") {
+      time = result1[0] * 60;
+    } else {
+      time = 0;
+    }
+  }
+  return time;
+}
+
+
+
+ ItemClass.prototype.getBookRelative = function() {
+    if (this.book_data!= null) {
+
+if(this.book_data.relative!= null){
+ var temprelative=JSON.parse(JSON.stringify((this.book_data.relative)))	
+   if (temprelative.intelligence== null){temprelative.intelligence=0;}
+    if (temprelative.required_level== null){temprelative.required_level=0;} 
+    if (temprelative.max_level== null){temprelative.max_level=0;} 
+    if (temprelative.fun== null){temprelative.fun=0;} 
+    if (temprelative.chapters== null){temprelative.chapters=0;}
+	if (temprelative.time== null){temprelative.time=0;}
+   return temprelative;
+	}
+	else{
+	return null;	
+	}
+	
+	}
+
+};
+
+ItemClass.prototype.isBook = function() {
+  if (this.book_data!= null) {
+    return true;
+  }
+  return false;
+};
+
+ItemClass.prototype.dumpBookData = function() {
+  var string_html = "";
+   if (this.isBook()) {
+if(this.getBookRelative()==null){	   
+	if (this.book_data.skill!=null) {
+     var s = new SkillClass(this.book_data.skill);
+     if (s) {
+       string_html += Tr("関連スキル") + ": " + s.getName() + "<br>";
+	   string_html += Tr("最低限必要なスキルを読む") + ": " + this.book_data.required_level + "<br>";
+	    string_html += Tr("訓練できる最高のスキルレベルを読む") + ": " + this.book_data.max_level + "<br>";
+        } 
+		}
+		string_html += Tr("最低限必要な情報を読む") + ": " + this.book_data.intelligence + "<br>";	
+        string_html += Tr("気分値") + ": " + this.book_data.fun + "<br>";	
+	    string_html += Tr("章の数") + ": " + this.book_data.chapters + "<br>";
+		if(this.book_data.martial_art!=null){
+		string_html += Tr("武道を学ぶことができます") + ": " + this.book_data.martial_art + "<br>";
+		}
+		string_html += Tr("読書に必要な時間") + ": " + convert_booktime(this.book_data.time)+"m" + "<br>";
+	
+}
+else{
+	if (this.book_data.skill!=null) {
+     var s = new SkillClass(this.book_data.skill);
+     if (s) {
+       string_html += Tr("関連スキル") + ": " + s.getName() + "<br>";
+	   string_html += Tr("最低限必要なスキルを読む") + ": " + (this.book_data.required_level+this.getBookRelative().required_level) + "<br>";
+	    string_html += Tr("訓練できる最高のスキルレベルを読む") + ": " + (this.book_data.max_level+this.getBookRelative().max_level) + "<br>";
+        } 
+		}
+		string_html += Tr("最低限必要な情報を読む") + ": " + (this.book_data.intelligence+this.getBookRelative().intelligence) + "<br>";	
+        string_html += Tr("気分値") + ": " + (this.book_data.fun +this.getBookRelative().fun)+ "<br>";	
+	    string_html += Tr("章の数") + ": " + (this.book_data.chapters+this.getBookRelative().chapters) + "<br>";
+		if(this.book_data.martial_art!=null){
+		string_html += Tr("武道を学ぶことができます") + ": " + this.book_data.martial_art + "<br>";
+		}
+		string_html += Tr("読書に必要な時間") + ": " +  (convert_booktime(this.book_data.time)+this.getBookRelative().time)+"m"+ "<br>";	
+}
   }
   return string_html;
 };

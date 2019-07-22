@@ -124,7 +124,7 @@ RecipeClass.prototype.getDifficulty = function() {
     } else if (copy_from) {
       this.difficulty = copy_from.getDifficulty();
     } else {
-      this.difficulty = "N/A";
+      this.difficulty = "0";
     }
   }
   return this.difficulty;
@@ -141,6 +141,19 @@ RecipeClass.prototype.getTime = function() {
       this.time = 0;
     }
   }
+  if (typeof this.time == "number") {
+    this.time=this.time/6000;
+	//1回合=1秒=100点行动点数,60回合=60秒=1分钟=6000点行动点数
+	if (Number.isInteger(this.time)){
+	this.time=this.time+"m";	
+	}
+	else {
+	 var a = Math.floor(this.time);
+	 var b = this.time-a;	
+	 b=Math.round(b*60);
+      this.time = a+"m"+b+"s";
+    }
+  } 
   return this.time;
 };
 
@@ -152,7 +165,7 @@ RecipeClass.prototype.getAutolearn = function() {
     } else if (copy_from) {
       this.autolearn = copy_from.getAutolearn();
     } else {
-      this.autolearn = true;
+      this.autolearn = false;
     }
   }
   return this.autolearn;
@@ -313,4 +326,44 @@ RecipeListClass.prototype.getRecipe = function(n) {
     return this.list[n];
   }
   return null;
+};
+
+RecipeClass.prototype.getbatch_time_factors = function() {
+  if (!this.batch_time_factors) {
+    var copy_from = this.getCopyFrom();
+    if (this.json.batch_time_factors) {
+      this.batch_time_factors = this.json.batch_time_factors;
+    } else if (copy_from) {
+      this.batch_time_factors = copy_from.getbatch_time_factors();
+    } else {
+      this.batch_time_factors = [[]];
+    }
+  }
+  if (!Array.isArray(this.batch_time_factors[0])) {
+    this.batch_time_factors = [this.batch_time_factors];
+  }
+  return this.batch_time_factors;
+};
+
+RecipeClass.prototype.getFlags = function() {
+  if (!this.flags) {
+    var copy_from = this.getCopyFrom();
+    if (this.json.flags) {
+      this.flags = this.json.flags;
+    } else if (copy_from) {
+      this.flags = copy_from.getFlags();
+    } else {
+      this.flags = [];
+    }
+  }
+  return this.flags;
+};
+
+RecipeClass.prototype.hasFlag = function(key_flag) {
+  for (f of this.getFlags()) {
+    if (f == key_flag) {
+      return true;
+    }
+  }
+  return false;
 };

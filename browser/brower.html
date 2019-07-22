@@ -3,6 +3,18 @@
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <link rel="stylesheet" type="text/css" href="style.css" />
+  <style>
+    pre {white-space: pre-wrap; /*css-3*/ 
+white-space: -moz-pre-wrap; /*Mozilla,since1999*/ 
+white-space: -pre-wrap; /*Opera4-6*/ 
+white-space: -o-pre-wrap; /*Opera7*/ 
+word-wrap: break-word; /*InternetExplorer5.5+*/  }
+    .string { color: green; }        /*字符串的样式*/
+    .number { color: darkorange; }    /*数字的样式*/
+    .boolean { color: red; }        /*布尔型数据的样式*/
+    .null { color: royalblue; }        /*null值的样式*/
+    .key { color: blueviolet; }            /*key值的样式*/
+</style>
   <script src="js/jquery-3.0.0.min.js"></script>
   <script type="text/javascript" src="setting.js"></script>
   <script type="text/javascript" src="js/jquery.tablesorter.min.js"></script>
@@ -14,22 +26,35 @@
   <script type="text/javascript" src="js/ItemClass.js"></script>
   <script type="text/javascript" src="js/RequirementClass.js"></script>
   <script type="text/javascript" src="js/RecipeClass.js"></script>
+  <script type="text/javascript" src="js/TechniqueClass.js"></script>
+  <script type="text/javascript" src="js/SkillClass.js"></script>
+  <script type="text/javascript" src="js/ToolqualityClass.js"></script>
+  <script type="text/javascript" src="js/AmmunitiontypeClass.js"></script>    
   <script type="text/javascript" src="js/Transrate.js"></script>
+  <script type="text/javascript" src="js/json-syntaxHighlight.js"></script>  
   <script type="text/javascript" src="js/lang/en.js"></script>
+  <script type="text/javascript" src="js/lang/zh_CN.js"></script>  
   <script type="text/javascript">
     $(function () {
-      $(document).on("keypress", "input:not(.allow_submit)", function (event) {
+     $('#title_info').append('<a href=javascript:select_tab("ItemSearch")>' + Tr("アイテム検索") + '</a>');
+	 $('#title_info').append(' ');
+	 $('#title_info').append('<a href=javascript:select_tab("MeleeList")>'+ Tr("近接武器リスト") + '</a>');
+	 $('#input_box').append('<input type="text" name="textbox" onkeyup="search_data()" placeholder=' + Tr("検索キーワードを入力してください") + '>');
+ $(document).on("keypress", "input:not(.allow_submit)", function (event) {
         return event.which != 13;
       });
     });
     var melee_list_cache = false;
-
-    function item_data_html(id) {
+    getLanguage()
+	    function item_data_html(id) {
       var string_html = "";
       item_data = new ItemClass(id);
       console.log(item_data);
 
       string_html += item_data.dumpBasicData() + '<br>';
+	  if (item_data.getCopyFrom()!=null){
+	  string_html += "copy-from: " +link_to_item(item_data.getCopyFrom().getName(), item_data.getCopyFrom().getId()) + '<br>';
+	  }
       if (item_data.isArmor()) {
         string_html += "<h3>" + Tr("装備データ") + "</h3>";
         string_html += item_data.dumpArmorData() + '<br>';
@@ -37,6 +62,10 @@
       if (item_data.isGun()) {
         string_html += "<h3>" + Tr("射撃データ") + "</h3>";
         string_html += item_data.dumpGunData() + '<br>';
+      }
+	 if (item_data.isBook()) {
+        string_html += "<h3>" + Tr("書物データ") + "</h3>";
+        string_html += item_data.dumpBookData() + '<br>';
       }
       string_html += item_data.getDescription() + '<br>';
 
@@ -58,20 +87,62 @@
         for (var recipe_num = 0; recipe_list.getRecipe(recipe_num); recipe_num++) {
           string_html += "<h4>" + Tr("レシピ") + (recipe_num + 1) + "</h4>";
           var recipe_data = recipe_list.getRecipe(recipe_num);
-          string_html += Tr("適用スキル") + ": " + recipe_data.getSkillUsed() + "<br>";
+		  	if (recipe_data.getSkillUsed()!= "N/A") {
+             var s = new SkillClass(recipe_data.getSkillUsed());
+             if (s) {
+              string_html += Tr("適用スキル") + ": " + s.getName() +"(" + recipe_data.getDifficulty() +")<br>";
+			  }
+			  else  {
+               string_html += Tr("適用スキル") + ": " + Tr(recipe_data.getSkillUsed()) +"(" + recipe_data.getDifficulty() +")<br>";
+                 }
+               } 
           string_html += Tr("必要スキル") + ": ";
           if (recipe_data.getSkillsRequired()) {
             for (var r of recipe_data.getSkillsRequired()) {
               if (r[0]) {
-                string_html += r[0] + "(" + r[1] + "), ";
-              }
+			   var s = new SkillClass(r[0]);
+             if (s) {
+              string_html += s.getName()  + "(" + r[1] + "), ";
+			  }
+			  else  {
+                string_html += Tr(r[0]) + "(" + r[1] + "), ";
+                 }
+               }
             }
           }
           string_html += "<br>";
-          string_html += Tr("難易度") + ": " + recipe_data.getDifficulty() + "<br>";
-          string_html += Tr("完了まで") + ": " + (recipe_data.getTime() / 1000) + " " + Tr("分") + "<br>";
+          if (recipe_data.getAutolearn()== true) {
+            string_html += Tr("このレシピは必要スキルを満たしたときに自動で習得します。") +  "<br>";
+          }				  
+          for (var b of recipe_data.getBookLearn()) {
+            var item = new ItemClass(b[0]);
+            string_html += Tr("$2 から適用スキルがレベル $1 で習得します。", b[1], link_to_item(item.getName(), item.getId()))+ "<br>";
+          }
+          string_html += "<br>";  
+		  string_html += Tr("完了まで") + ": " + (recipe_data.getTime() ) + "<br>";
+		   if (recipe_data.getbatch_time_factors()) {
+		      for (var batch_time of recipe_data.getbatch_time_factors()) {
+              if (batch_time[0]) {
+                string_html += Tr("ロットで $2 個以上作ると $1% の時間が減る。", batch_time[0], batch_time[1])+ "<br>";
+              }
+            }
+		   }
+		   if (recipe_data.getFlags()) {
+		     if (recipe_data.hasFlag("BLIND_EASY")){
+			 string_html += Tr("暗所制作: シンプル")+ "<br>";
+			 }
+			 else if (recipe_data.hasFlag("BLIND_HARD")){
+			 string_html += Tr("暗所制作: 困難")+ "<br>";
+			 }
+		   }		   
           for (var q of recipe_data.getQualities()) {
-            string_html += Tr("レベル $1 の $2 性能", q.level, q.id) + "<br>";
+			   var s = new ToolqualityClass(q.id);
+             if (s) {
+			  string_html += Tr("レベル $1 の $2 性能", q.level, s.getName()) + "<br>";			  
+              }
+			  else  {
+                string_html += Tr("レベル $1 の $2 性能", q.level, Tr(q.id)) + "<br>";
+                 }			  
           }
           for (var t of recipe_data.getTools()) {
             string_html += "&gt;";
@@ -83,7 +154,7 @@
                 string_html += link_to_item(item.getName(), item.getId());
                 string_html += charges != -1 ? Tr("(充填量: $1)", charges) : "";
                 if (t.length - 1 > i) {
-                  string_html += " または ";
+                  string_html += Tr(" または ");
                 } else {
                   string_html += "<br>";
                 }
@@ -105,21 +176,16 @@
               }
             }
           }
-          for (var b of recipe_data.getBookLearn()) {
-            var item = new ItemClass(b[0]);
-            string_html += link_to_item(item.getName(), item.getId()) + " から適用スキルがレベル " + b[1] + " で習得します。<br>";
-          }
-          if (recipe_data.getAutolearn()) {
-            string_html += "このレシピは必要スキルを満たしたときに自動で習得します。<br>";
-          }
+
         }
       }
       string_html += "</p>";
       return string_html;
     }
-
+	
     function select_item(key) {
       $('#item_info').empty();
+	  $('#json_info').empty();
       var item_data = new ItemClass(key);
       var recipe_list = new RecipeListClass(key);
       console.log(JSON.stringify(item_data));
@@ -127,19 +193,27 @@
 
       $('#item_info').append(item_data_html(key));
       $('#item_info').append(item_recipe_html(key));
-      $('#item_info').append("<h3>JSON</h3>");
-      $('#item_info').append("<h4>Item</h3>");
-      $('#item_info').append(JSON.stringify(item_data.getJson()));
-      $('#item_info').append("<h4>Recipes</h3>");
+	  $('#item_info').append('<a href=javascript:click_json("' + key + '")>' + "<h3>SHOW JSON</h3>" + '</a><br>');
+    }
+	
+	function click_json(key) {
+	  var item_data = new ItemClass(key);
+      var recipe_list = new RecipeListClass(key);
+	$('#json_info').empty();
+	   $('#json_info').append("<h4>Item</h3>");
+      $('#json_info').append(syntaxHighlight(item_data.getJson()));
+      $('#json_info').append("<h4>Recipes</h3>");
       var i = 0;
       r = recipe_list.getRecipe(i);
       while (r) {
-        $('#item_info').append(JSON.stringify(r.getJson()));
-        i++;
+        $('#json_info').append("Recipe"+(i+1)+":</p>");
+        $('#json_info').append(syntaxHighlight(r.getJson()));
+		$('#json_info').append("</p>");
+		i++;
         r = recipe_list.getRecipe(i);
       }
-    }
-
+	}
+	
     function search_data() {
       var key = search.textbox.value;
       $('#search_result').empty()
@@ -221,15 +295,18 @@
 
   <div class="js-tab">
     <header class="js-tab-title">
-      <span><a href='javascript:select_tab("ItemSearch")'>アイテム検索</a></span>
-      <span><a href='javascript:select_tab("MeleeList")'>近接武器リスト</a></span>
+                <header id="title_info">
+          </header><!--<span><a href='javascript:select_tab("ItemSearch")'>物品搜索</a></span>-->
+      <!--<span><a href='javascript:select_tab("MeleeList")'>近接武器リスト</a></span>-->
     </header>
 
     <div class=js-tab-content>
       <div class="Main active" id="ItemSearch">
         <div class="LeftArea">
           <form name="search">
-            <input type="text" name="textbox" onkeyup="search_data()" placeholder="検索キーワードを入力してください">
+		  <div id="input_box">
+             <!--<input type="text" name="textbox" onkeyup="search_data()" placeholder="请输入搜索关键词">-->
+			</div>
           </form>
           <div id="search_result">
           </div>
@@ -237,6 +314,8 @@
         <div class="RightArea">
           <div id="item_info">
           </div>
+		  <pre id="json_info">
+          </pre>
         </div>
       </div>
 
@@ -246,11 +325,11 @@
           <thead>
             <tr>
               <th>Name</th>
-              <th><span title="Volume">Bash</span></th>
-              <th><span title="Weight">Cut/Stab</span></th>
-              <th><span title="Moves per attack">Total</span></th>
-              <th><span title="Bashing+Cutting">Cost</span></th>
-              <th><span title="Damage per move">DPS</span></th>
+              <th><span title="Bash">Bash</span></th>
+              <th><span title="Cut_Stab">Cut/Stab</span></th>
+              <th><span title="Bashing+Cutting">Total</span></th>
+              <th><span title="Moves per attack">Cost</span></th>
+              <th><span title="Damage per move">DPM</span></th>
               <th><span title="To-Hit">To-Hit</span></th>
             </tr>
           </thead>
