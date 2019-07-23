@@ -123,13 +123,13 @@ word-wrap: break-word; /*InternetExplorer5.5+*/  }
 		   if (recipe_data.getbatch_time_factors()) {
 		      for (var batch_time of recipe_data.getbatch_time_factors()) {
               if (batch_time[0]) {
-                string_html += Tr("ロットで $2 個以上作ると $1% の時間が減る。", batch_time[0], batch_time[1])+ "<br>";
+                string_html += Tr("$2 個以上作ると $1% の時間が減る。", batch_time[0], batch_time[1])+ "<br>";
               }
             }
 		   }
 		   if (recipe_data.getFlags()) {
 		     if (recipe_data.hasFlag("BLIND_EASY")){
-			 string_html += Tr("暗所制作: シンプル")+ "<br>";
+			 string_html += Tr("暗所制作: 容易")+ "<br>";
 			 }
 			 else if (recipe_data.hasFlag("BLIND_HARD")){
 			 string_html += Tr("暗所制作: 困難")+ "<br>";

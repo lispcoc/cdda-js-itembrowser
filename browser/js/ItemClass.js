@@ -398,11 +398,11 @@ if(this.getminstrength()>0){
 }
 
   if (this.getType() == "COMESTIBLE") {
-string_html += Tr("卡路里") + ": " + this.calories + "<br>";
-string_html += Tr("解渴") + ": " + this.quench + "<br>";		
-string_html += Tr("心情值") + ": " + this.fun + "<br>";		
+string_html += Tr("カロリー") + ": " + this.calories + "<br>";
+string_html += Tr("水分") + ": " + this.quench + "<br>";		
+string_html += Tr("心情値") + ": " + this.fun + "<br>";		
 string_html += Tr("健康值") + ": " + this.healthy + "<br>";		
-string_html += Tr("保质期") + ": " + this.spoils_in + "<br>";				  
+string_html += Tr("保存期間") + ": " + this.spoils_in + "<br>";				  
   }
        		if (this.capacity!=null){
        string_html += Tr("弾容量") + ": " + this.capacity + "<br>";			
@@ -433,10 +433,10 @@ string_html += Tr("保质期") + ": " + this.spoils_in + "<br>";
       if (q[0]) {
 			   var s = new ToolqualityClass(q[0]);
              if (s) {
-			  string_html += Tr("ありますレベル $1 の $2 性能", q[1], s.getName()) + "<br>";	 
+			  string_html += Tr("レベル $1 の $2 性能を有しています。", q[1], s.getName()) + "<br>";	 
               }
 			  else  {
-                string_html += Tr("ありますレベル $1 の $2 性能", q[1], Tr(q[0])) + "<br>";
+                string_html += Tr("レベル $1 の $2 性能を有しています。", q[1], Tr(q[0])) + "<br>";
                  }		  
 
       }
@@ -475,10 +475,10 @@ if(this.getTechniques().length>0){
     }
   }
    if (this.hasFlag("REACH3") ) {
-    string_html += Tr("この品物は進められます長い遠距攻撃。") + "<br>";
+    string_html += Tr("この武器は3マス先まで攻撃できます。") + "<br>";
   } 
    else if (this.hasFlag("REACH_ATTACK") ){
-     string_html += Tr("この品物は進められます遠距攻撃。") + "<br>";
+     string_html += Tr("この武器は2マス先まで攻撃できます。") + "<br>";
     } 
   if (this.isConductive()) {
     string_html += Tr("このアイテムは導電体です。") + "<br>";
@@ -834,12 +834,12 @@ if(this.getBookRelative()==null){
      var s = new SkillClass(this.book_data.skill);
      if (s) {
        string_html += Tr("関連スキル") + ": " + s.getName() + "<br>";
-	   string_html += Tr("最低限必要なスキルを読む") + ": " + this.book_data.required_level + "<br>";
-	    string_html += Tr("訓練できる最高のスキルレベルを読む") + ": " + this.book_data.max_level + "<br>";
+	   string_html += Tr("読むのに必要なスキル") + ": " + this.book_data.required_level + "<br>";
+	    string_html += Tr("訓練可能なスキルレベル") + ": " + this.book_data.max_level + "<br>";
         } 
 		}
-		string_html += Tr("最低限必要な情報を読む") + ": " + this.book_data.intelligence + "<br>";	
-        string_html += Tr("気分値") + ": " + this.book_data.fun + "<br>";	
+		string_html += Tr("必要な知性") + ": " + this.book_data.intelligence + "<br>";	
+        string_html += Tr("心情値") + ": " + this.book_data.fun + "<br>";	
 	    string_html += Tr("章の数") + ": " + this.book_data.chapters + "<br>";
 		if(this.book_data.martial_art!=null){
 		string_html += Tr("武道を学ぶことができます") + ": " + this.book_data.martial_art + "<br>";
@@ -852,12 +852,12 @@ else{
      var s = new SkillClass(this.book_data.skill);
      if (s) {
        string_html += Tr("関連スキル") + ": " + s.getName() + "<br>";
-	   string_html += Tr("最低限必要なスキルを読む") + ": " + (this.book_data.required_level+this.getBookRelative().required_level) + "<br>";
-	    string_html += Tr("訓練できる最高のスキルレベルを読む") + ": " + (this.book_data.max_level+this.getBookRelative().max_level) + "<br>";
+	   string_html += Tr("読むのに必要なスキル") + ": " + (this.book_data.required_level+this.getBookRelative().required_level) + "<br>";
+	    string_html += Tr("訓練可能なスキルレベル") + ": " + (this.book_data.max_level+this.getBookRelative().max_level) + "<br>";
         } 
 		}
-		string_html += Tr("最低限必要な情報を読む") + ": " + (this.book_data.intelligence+this.getBookRelative().intelligence) + "<br>";	
-        string_html += Tr("気分値") + ": " + (this.book_data.fun +this.getBookRelative().fun)+ "<br>";	
+		string_html += Tr("必要な知性") + ": " + (this.book_data.intelligence+this.getBookRelative().intelligence) + "<br>";	
+        string_html += Tr("心情値") + ": " + (this.book_data.fun +this.getBookRelative().fun)+ "<br>";	
 	    string_html += Tr("章の数") + ": " + (this.book_data.chapters+this.getBookRelative().chapters) + "<br>";
 		if(this.book_data.martial_art!=null){
 		string_html += Tr("武道を学ぶことができます") + ": " + this.book_data.martial_art + "<br>";
