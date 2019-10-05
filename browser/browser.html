@@ -4,17 +4,19 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <link rel="stylesheet" type="text/css" href="style.css" />
   <style>
-    pre {white-space: pre-wrap; /*css-3*/ 
-white-space: -moz-pre-wrap; /*Mozilla,since1999*/ 
-white-space: -pre-wrap; /*Opera4-6*/ 
-white-space: -o-pre-wrap; /*Opera7*/ 
-word-wrap: break-word; /*InternetExplorer5.5+*/  }
-    .string { color: green; }        /*字符串的样式*/
-    .number { color: darkorange; }    /*数字的样式*/
-    .boolean { color: red; }        /*布尔型数据的样式*/
-    .null { color: royalblue; }        /*null值的样式*/
-    .key { color: blueviolet; }            /*key值的样式*/
-</style>
+	pre {
+	  white-space: pre-wrap; /*css-3*/ 
+	  white-space: -moz-pre-wrap; /*Mozilla,since1999*/ 
+	  white-space: -pre-wrap; /*Opera4-6*/ 
+	  white-space: -o-pre-wrap; /*Opera7*/ 
+	  word-wrap: break-word; /*InternetExplorer5.5+*/  
+	}
+	.string { color: green; }        /*字符串的样式*/
+	.number { color: darkorange; }    /*数字的样式*/
+	.boolean { color: red; }        /*布尔型数据的样式*/
+	.null { color: royalblue; }        /*null值的样式*/
+	.key { color: blueviolet; }            /*key值的样式*/
+  </style>
   <script src="js/jquery-3.0.0.min.js"></script>
   <script type="text/javascript" src="setting.js"></script>
   <script type="text/javascript" src="js/jquery.tablesorter.min.js"></script>
@@ -36,11 +38,11 @@ word-wrap: break-word; /*InternetExplorer5.5+*/  }
   <script type="text/javascript" src="js/lang/zh_CN.js"></script>  
   <script type="text/javascript">
     $(function () {
-     $('#title_info').append('<a href=javascript:select_tab("ItemSearch")>' + Tr("アイテム検索") + '</a>');
-	 $('#title_info').append(' ');
-	 $('#title_info').append('<a href=javascript:select_tab("MeleeList")>'+ Tr("近接武器リスト") + '</a>');
-	 $('#input_box').append('<input type="text" name="textbox" onkeyup="search_data()" placeholder=' + Tr("検索キーワードを入力してください") + '>');
- $(document).on("keypress", "input:not(.allow_submit)", function (event) {
+      $('#title_info').append('<a href=javascript:select_tab("ItemSearch")>' + Tr("アイテム検索") + '</a>');
+	  $('#title_info').append(' ');
+	  $('#title_info').append('<a href=javascript:select_tab("MeleeList")>'+ Tr("近接武器リスト") + '</a>');
+	  $('#input_box').append('<input type="text" name="textbox" onkeyup="search_data()" placeholder=' + Tr("検索キーワードを入力してください") + '>');
+	  $(document).on("keypress", "input:not(.allow_submit)", function (event) {
         return event.which != 13;
       });
     });

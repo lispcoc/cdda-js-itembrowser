@@ -11,13 +11,13 @@ recipe_type = "recipe"
 flag_type = "json_flag"
 item_action_type = "item_action"
 ITEM_CATEGORY_type = "ITEM_CATEGORY"
-item_group_type = "item_group"
 material_type = "material"
 technique_type = "technique" 
 skill_type = "skill"
 tool_quality_type = "tool_quality"
 requirement_type = "requirement"
 ammunition_type = "ammunition_type"
+itemgroups_type = "item_group"
 
 item_types = {
   "AMMO",
@@ -114,6 +114,13 @@ function is_ammunition_type(t)
   return false
 end
 
+function is_itemgroups_type(t)
+  if t == itemgroups_type then
+    return true
+  end
+  return false
+end
+
 function translate_table(lang_data, t)
   local translate_members = {
     "name",
@@ -132,6 +139,7 @@ function translate_table(lang_data, t)
   end
   return t
 end
+
 
 local fd, err = io.open(lang_file, "rb")
 if not fd then
@@ -160,9 +168,18 @@ local tool_qualitys = {}
 local mod_tool_qualitys = {}
 local ammunition_types = {}
 local mod_ammunition_types = {}
-
+local itemgroups = {}
+local data_array = {}
 local list = io.open("rsc/list.txt")
 local filepath = list:read()
+local answer
+
+repeat
+ io.write("Do you want to translate the JSON data?? ")
+ io.flush()
+ answer=io.read()
+until answer=="y" or answer=="n"
+
 
 while filepath do
   local jsonfile = io.open(filepath)
@@ -172,36 +189,29 @@ while filepath do
     for key, val in pairs(data) do
       if type(val) == "table" then
         local type_val = val["type"]
-        local new_val
-        if is_item_type(type_val) then
-          -- langage update
-          new_val = translate_table(lang_data, val)
-          table.insert(items, new_val)
-        elseif is_recipe_type(type_val) then
-          new_val = translate_table(lang_data, val)
-          table.insert(recipes, new_val)
-        elseif is_requirement_type(type_val) then
-          new_val = translate_table(lang_data, val)
-          table.insert(requirements, new_val)
-        elseif is_material_type(type_val) then
-          new_val = translate_table(lang_data, val)
-          table.insert(materials, new_val)
-        elseif is_flag_type(type_val) then
-          new_val = translate_table(lang_data, val)
-          table.insert(flags, new_val)
-        elseif is_technique_type(type_val) then
-          new_val = translate_table(lang_data, val)
-          table.insert(techniques, new_val)	
-        elseif is_skill_type(type_val) then
-          new_val = translate_table(lang_data, val)
-          table.insert(skills, new_val)
-        elseif is_tool_quality_type(type_val) then
-          new_val = translate_table(lang_data, val)
-          table.insert(tool_qualitys, new_val)
-        elseif is_ammunition_type(type_val) then
-          new_val = translate_table(lang_data, val)
-          table.insert(ammunition_types, new_val)			  
-        end
+		if answer=="y" then
+			if is_item_type(type_val) then table.insert(items, translate_table(lang_data, val))
+			elseif is_recipe_type(type_val) then table.insert(recipes, translate_table(lang_data, val)) 
+			elseif is_requirement_type(type_val) then table.insert(requirements, translate_table(lang_data, val)) 
+			elseif is_material_type(type_val) then table.insert(materials, translate_table(lang_data, val)) 
+			elseif is_flag_type(type_val) then table.insert(flags, translate_table(lang_data, val)) 
+			elseif is_technique_type(type_val) then table.insert(techniques, translate_table(lang_data, val)) 
+			elseif is_skill_type(type_val) then table.insert(skills, translate_table(lang_data, val)) 
+			elseif is_tool_quality_type(type_val) then table.insert(tool_qualitys, translate_table(lang_data, val)) 
+			elseif is_itemgroups_type(type_val) then table.insert(itemgroups, translate_table(lang_data, val)) 
+			elseif is_ammunition_type(type_val) then table.insert(ammunition_types, translate_table(lang_data, val)) end
+	    else
+			if is_item_type(type_val) then table.insert(items, val) 
+			elseif is_recipe_type(type_val) then table.insert(recipes, val) 
+			elseif is_requirement_type(type_val) then table.insert(requirements, val) 
+			elseif is_material_type(type_val) then table.insert(materials, val) 
+			elseif is_flag_type(type_val) then table.insert(flags, val) 
+			elseif is_technique_type(type_val) then table.insert(techniques, val) 
+			elseif is_skill_type(type_val) then table.insert(skills, val) 
+			elseif is_tool_quality_type(type_val) then table.insert(tool_qualitys, val) 
+			elseif is_itemgroups_type(type_val) then table.insert(itemgroups, val) 
+			elseif is_ammunition_type(type_val) then table.insert(ammunition_types, val) end
+		end
       end
     end
   end
@@ -269,18 +279,18 @@ for _, mod_ident in pairs(valid_mod) do
             elseif is_flag_type(type_val) then
               new_val = translate_table(lang_data, val)
               table.insert(mod_flags, new_val)
-        elseif is_technique_type(type_val) then
-          new_val = translate_table(lang_data, val)
-          table.insert(mod_techniques, new_val)
-        elseif is_skill_type(type_val) then
-          new_val = translate_table(lang_data, val)
-          table.insert(mod_skills, new_val)
-        elseif is_tool_quality_type(type_val) then
-          new_val = translate_table(lang_data, val)
-          table.insert(mod_tool_qualitys, new_val)
-        elseif is_ammunition_type(type_val) then
-          new_val = translate_table(lang_data, val)
-          table.insert(mod_ammunition_types, new_val)		  
+			elseif is_technique_type(type_val) then
+			  new_val = translate_table(lang_data, val)
+			  table.insert(mod_techniques, new_val)
+			elseif is_skill_type(type_val) then
+			  new_val = translate_table(lang_data, val)
+			  table.insert(mod_skills, new_val)
+			elseif is_tool_quality_type(type_val) then
+			  new_val = translate_table(lang_data, val)
+			  table.insert(mod_tool_qualitys, new_val)
+			elseif is_ammunition_type(type_val) then
+			  new_val = translate_table(lang_data, val)
+			  table.insert(mod_ammunition_types, new_val)		  
             end
           end
         end
@@ -364,6 +374,10 @@ io.write(";\n")
 
 io.write("var mod_flags = ")
 io.write(json.encode(mod_flags))
+io.write(";\n")
+
+io.write("var itemgroups = ")
+io.write(json.encode(itemgroups))
 io.write(";\n")
 
 --[[
