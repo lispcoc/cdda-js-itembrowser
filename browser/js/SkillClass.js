@@ -1,45 +1,59 @@
-function internal_get_json_skill_from_id(key_id) {
-  for (var skill of mod_skills) {
-    if (skill.ident) {
-      if (skill.ident == key_id) {
-        return skill;
-      }
+var all_skill_data = [];
+
+class SkillClass {
+    static initAllSkillData() {
+        all_skill_data = [];
+        for (var skill of skills) {
+            var s = new SkillClass(skill);
+            s.init();
+            s.is_mod_skill = false;
+        }
+        for (var skill of mod_skills) {
+            var s = new SkillClass(skill);
+            s.init();
+            s.is_mod_skill = true;
+        }
     }
-  }
-  for (var skill of skills) {
-    if (skill.ident) {
-      if (skill.ident == key_id) {
-        return skill;
-      }
+
+    static searchData(ident) {
+        var res = null;
+        all_skill_data.forEach(function(s) {
+            if (s.ident == ident) {
+                res = s;
+            }
+        });
+        return res;
     }
-  }
-  return null;
+
+    static getAllData() {
+        return all_skill_data;
+    }
+
+    constructor(jo) {
+        this.json = jo;
+        if (jo.ident) {
+            this.ident = jo.ident;
+        } else {
+            this.ident = null;
+            return;
+        }
+        all_skill_data.push(this);
+    }
+
+    init() {
+
+    }
+
+    get name() {
+        return this.json.name ? this.json.name : Tr("No name skill");
+    }
+
+    get info() {
+        if (this.json.info) {
+            return this.json.info;
+        } else if (this.json.description) {
+            return this.json.description;
+        }
+        return Tr("No description.");
+    }
 }
-
-SkillClass = function(id) {
-  this.ident = id;
-  this.json = internal_get_json_skill_from_id(this.ident);
-};
-
-SkillClass.prototype.getInfo = function(id) {
-  if (!this.json) {
-    return null;
-  }
-    if (this.json.info) {
-    return this.json.info;
-  }
-  else if(this.json.description) {
-  return this.json.description;
-}
-};
-
-SkillClass.prototype.getName = function() {
-  if (!this.name) {
-    this.name = Tr("No name skill");
-	
-    if (this.json.name) {
-      this.name = this.json.name;
-    }
-  }
-  return this.name;
-};

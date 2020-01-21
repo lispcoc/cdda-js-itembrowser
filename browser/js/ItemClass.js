@@ -370,7 +370,7 @@ class ItemClass {
         return this.basic_data.material;
     }
 
-    getQualities() {
+    get qualities() {
         return this.basic_data.qualities;
     }
 
@@ -492,16 +492,13 @@ class ItemClass {
             }
 
         }
-        for (var q of this.getQualities()) {
-            if (q) {
-                if (q[0]) {
-                    var s = new ToolqualityClass(q[0]);
-                    if (s) {
-                        string_html += Tr("レベル $1 の $2 性能を有しています。", q[1], s.getName()) + "<br>";
-                    } else {
-                        string_html += Tr("レベル $1 の $2 性能を有しています。", q[1], Tr(q[0])) + "<br>";
-                    }
-
+        for (var q of this.qualities) {
+            if (q[0]) {
+                var s = ToolqualityClass.searchData(q[0]);
+                if (s) {
+                    string_html += Tr("レベル $1 の $2 性能を有しています。", q[1], s.name) + "<br>";
+                } else {
+                    string_html += Tr("レベル $1 の $2 性能を有しています。", q[1], Tr(q[0])) + "<br>";
                 }
             }
         }
@@ -688,9 +685,9 @@ class ItemClass {
             var skill = this.gun_data.skill;
             var ammo = this.gun_data.ammo;
             if (skill != null) {
-                var s = new SkillClass(skill);
+                var s = SkillClass.searchData(skill);
                 if (s) {
-                    string_html += Tr("適用スキル") + ": " + s.getName() + "<br>";
+                    string_html += Tr("適用スキル") + ": " + s.name + "<br>";
                 }
             }
 
@@ -811,9 +808,9 @@ class ItemClass {
         if (this.isBook()) {
             if (this.getBookRelative() == null) {
                 if (this.book_data.skill != null) {
-                    var s = new SkillClass(this.book_data.skill);
+                    var s = SkillClass.searchData(this.book_data.skill);
                     if (s) {
-                        string_html += Tr("関連スキル") + ": " + s.getName() + "<br>";
+                        string_html += Tr("関連スキル") + ": " + s.name + "<br>";
                         string_html += Tr("読むのに必要なスキル") + ": " + this.book_data.required_level + "<br>";
                         string_html += Tr("訓練可能なスキルレベル") + ": " + this.book_data.max_level + "<br>";
                     }
@@ -828,9 +825,9 @@ class ItemClass {
 
             } else {
                 if (this.book_data.skill != null) {
-                    var s = new SkillClass(this.book_data.skill);
+                    var s = SkillClass.searchData(this.book_data.skill);
                     if (s) {
-                        string_html += Tr("関連スキル") + ": " + s.getName() + "<br>";
+                        string_html += Tr("関連スキル") + ": " + s.name + "<br>";
                         string_html += Tr("読むのに必要なスキル") + ": " + (this.book_data.required_level + this.getBookRelative().required_level) + "<br>";
                         string_html += Tr("訓練可能なスキルレベル") + ": " + (this.book_data.max_level + this.getBookRelative().max_level) + "<br>";
                     }

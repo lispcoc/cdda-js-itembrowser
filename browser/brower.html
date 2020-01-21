@@ -116,9 +116,9 @@
                     string_html += "<h4>" + Tr("レシピ") + (recipe_num + 1) + "</h4>";
                     var recipe_data = recipe_list.getRecipe(recipe_num);
                     if (recipe_data.getSkillUsed() != "N/A") {
-                        var s = new SkillClass(recipe_data.getSkillUsed());
+                        var s = SkillClass.searchData(recipe_data.getSkillUsed());
                         if (s) {
-                            string_html += Tr("適用スキル") + ": " + s.getName() + "(" + recipe_data.getDifficulty() + ")<br>";
+                            string_html += Tr("適用スキル") + ": " + s.name + "(" + recipe_data.getDifficulty() + ")<br>";
                         } else {
                             string_html += Tr("適用スキル") + ": " + Tr(recipe_data.getSkillUsed()) + "(" + recipe_data.getDifficulty() + ")<br>";
                         }
@@ -127,9 +127,9 @@
                     if (recipe_data.getSkillsRequired()) {
                         for (var r of recipe_data.getSkillsRequired()) {
                             if (r[0]) {
-                                var s = new SkillClass(r[0]);
+                                var s = SkillClass.searchData(r[0]);
                                 if (s) {
-                                    string_html += s.getName() + "(" + r[1] + "), ";
+                                    string_html += s.name + "(" + r[1] + "), ";
                                 } else {
                                     string_html += Tr(r[0]) + "(" + r[1] + "), ";
                                 }
@@ -161,9 +161,9 @@
                         }
                     }
                     for (var q of recipe_data.getQualities()) {
-                        var s = new ToolqualityClass(q.id);
+                        var s = ToolqualityClass.searchData(q.id);
                         if (s) {
-                            string_html += Tr("レベル $1 の $2 性能", q.level, s.getName()) + "<br>";
+                            string_html += Tr("レベル $1 の $2 性能", q.level, s.name) + "<br>";
                         } else {
                             string_html += Tr("レベル $1 の $2 性能", q.level, Tr(q.id)) + "<br>";
                         }
@@ -274,6 +274,8 @@
         $(document).ready(function() {
             $(".sortable").tablesorter();
             ItemClass.initAllItemData();
+            SkillClass.initAllSkillData();
+            ToolqualityClass.initAllData();
         });
 
         function update_melee_list() {

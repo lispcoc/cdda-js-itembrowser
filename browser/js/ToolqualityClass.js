@@ -1,33 +1,50 @@
-function internal_get_json_tool_quality_from_id(key_id) {
-  for (var tool_quality of mod_tool_qualitys) {
-    if (tool_quality.id) {
-      if (tool_quality.id == key_id) {
-        return tool_quality;
-      }
+var all_quality_data = [];
+
+class ToolqualityClass {
+    static initAllData() {
+        all_quality_data = [];
+        for (var q of tool_qualitys) {
+            var tmp = new ToolqualityClass(q);
+            tmp.init();
+            tmp.is_mod = false;
+        }
+        for (var q of mod_tool_qualitys) {
+            var tmp = new ToolqualityClass(q);
+            tmp.init();
+            tmp.is_mod = true;
+        }
     }
-  }
-  for (var tool_quality of tool_qualitys) {
-    if (tool_quality.id) {
-      if (tool_quality.id == key_id) {
-        return tool_quality;
-      }
+
+    static searchData(id) {
+        var res = null;
+        all_quality_data.forEach(function(q) {
+            if (q.id == id) {
+                res = q;
+            }
+        });
+        return res;
     }
-  }
-  return null;
+
+    static getAllData() {
+        return all_quality_data;
+    }
+
+    constructor(jo) {
+        this.json = jo;
+        if (jo.id) {
+            this.id = jo.id;
+        } else {
+            this.id = null;
+            return;
+        }
+        all_quality_data.push(this);
+    }
+
+    init() {
+
+    }
+
+    get name() {
+        return this.json.name ? this.json.name : Tr("No name tool quality");
+    }
 }
-
-ToolqualityClass = function(id) {
-  this.id = id;
-  this.json = internal_get_json_tool_quality_from_id(this.id);
-};
-
-ToolqualityClass.prototype.getName = function() {
-  if (!this.name) {
-    this.name = Tr("No name tool quality");
-	
-    if (this.json.name) {
-      this.name = this.json.name;
-    }
-  }
-  return this.name;
-};
