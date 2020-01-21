@@ -40,31 +40,6 @@ function isString(obj) {
     return typeof(obj) == "string" || obj instanceof String;
 }
 
-class ItemSlot {
-    constructor() {}
-    setVariable(name, val, set_after_clear = false) {
-        if (Array.isArray(this[name])) {
-            if (set_after_clear) {
-                this[name] = val;
-            } else {
-                if (!Array.isArray(val)) {
-                    val = [val];
-                }
-                Array.prototype.push.apply(this[name], val);
-            }
-        } else {
-            this[name] = val;
-        }
-    }
-    getVariable(name) {
-        if (this[name]) {
-            return this[name];
-        } else {
-            return null;
-        }
-    }
-}
-
 class ItemClass {
     static initAllItemData() {
         for (var item of items) {
@@ -743,7 +718,7 @@ class ItemClass {
                     if (mag[1]) {
                         for (var tempmag of mag[1]) {
                             var tempitem = ItemClass.searchItemData(tempmag);
-                            string_html += link_to_item(tempitem.getName(), tempitem.getId()) + " , ";
+                            string_html += link_to_item(tempitem.name, tempitem.id) + " , ";
                         }
                     }
 
@@ -849,7 +824,7 @@ class ItemClass {
                 if (this.book_data.martial_art != null) {
                     string_html += Tr("武道を学ぶことができます") + ": " + this.book_data.martial_art + "<br>";
                 }
-                string_html += Tr("読書に必要な時間") + ": " + convert_booktime(this.book_data.time) + "m" + "<br>";
+                string_html += Tr("読書に必要な時間") + ": " + this.book_data.time + "<br>";
 
             } else {
                 if (this.book_data.skill != null) {

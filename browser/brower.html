@@ -81,7 +81,7 @@
 
             string_html += item_data.dumpBasicData() + '<br>';
             if (item_data.copy_from) {
-                string_html += "copy-from: " + link_to_item(item_data.copy_from.getName(), item_data.copy_from.getId()) + '<br>';
+                string_html += "copy-from: " + link_to_item(item_data.copy_from.name, item_data.copy_from.id) + '<br>';
             }
             if (item_data.isArmor()) {
                 string_html += "<h3>" + Tr("装備データ") + "</h3>";
