@@ -118,14 +118,19 @@ function translate_table(lang_data, t)
   local translate_members = {
     "name",
     "description",
-    "info"
+    "info",
+    "str"
   }
   for key, val in pairs(t) do
+    if type(val) == "table" then
+      t[key] = translate_table(lang_data, val)
+    else
     for mkey, mval in pairs(translate_members) do
-      if key == mval then
-        if lang_data[val] then
-          t[key] = lang_data[val]
-          break
+        if key == mval then
+          if lang_data[val] then
+            t[key] = lang_data[val]
+            break
+          end
         end
       end
     end
