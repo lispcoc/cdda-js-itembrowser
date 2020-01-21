@@ -503,14 +503,8 @@ class ItemClass {
         if (this.getTechniques().length > 0) {
             string_html += Tr("技術") + ": ";
             for (var t of this.getTechniques()) {
-                if (t) {
-                    var tt = new TechniqueClass(t);
-                    if (tt) {
-                        if (tt.getName()) {
-                            string_html += tt.getName() + ": " + tt.getInfo() + "; ";
-                        }
-                    }
-                }
+                var tmp = TechniqueClass.searchData(t);
+                string_html += tmp.name + ": " + tmp.info + "; ";
             }
             string_html += "<br>";
         }
