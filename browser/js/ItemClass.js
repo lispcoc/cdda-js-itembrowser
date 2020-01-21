@@ -525,12 +525,10 @@ class ItemClass {
         string_html += "<br>";
 
         for (var flag_id of this.getFlags()) {
-            if (flag_id) {
-                var flag = new JsonFlagClass(flag_id);
-                if (flag) {
-                    if (flag.getInfo()) {
-                        string_html += flag.getInfo() + "<br>";
-                    }
+            var flag = JsonFlagClass.searchData(flag_id);
+            if (flag) {
+                if (flag.info) {
+                    string_html += flag.info + "<br>";
                 }
             }
         }
@@ -553,7 +551,6 @@ class ItemClass {
             return def;
         } else {
             if (this.isArmor()) {
-                console.log("isarmor");
                 var res = this.armor_data[key];
                 if (res != null) {
                     return res;

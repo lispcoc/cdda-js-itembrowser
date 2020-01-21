@@ -77,7 +77,6 @@
         function item_data_html(id) {
             var string_html = "";
             item_data = ItemClass.searchItemData(id);
-            console.log(item_data);
 
             string_html += item_data.dumpBasicData() + '<br>';
             if (item_data.copy_from) {
@@ -212,9 +211,6 @@
             $('#json_info').empty();
             var item_data = ItemClass.searchItemData(key);
             var recipe_list = new RecipeListClass(key);
-            console.log(JSON.stringify(item_data));
-            console.log(JSON.stringify(recipe_list));
-
             $('#item_info').append(item_data_html(key));
             $('#item_info').append(item_recipe_html(key));
             $('#item_info').append('<a href=javascript:click_json("' + key + '")>' + "<h3>SHOW JSON</h3>" + '</a><br>');
@@ -276,6 +272,7 @@
             ItemClass.initAllItemData();
             SkillClass.initAllSkillData();
             ToolqualityClass.initAllData();
+            JsonFlagClass.initAllData();
         });
 
         function update_melee_list() {
