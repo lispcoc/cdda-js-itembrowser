@@ -72,6 +72,7 @@
             });
         });
         var melee_list_cache = false;
+        var item_history = [];
         getLanguage()
 
         function item_data_html(id) {
@@ -214,6 +215,18 @@
             $('#item_info').append(item_data_html(key));
             $('#item_info').append(item_recipe_html(key));
             $('#item_info').append('<a href=javascript:click_json("' + key + '")>' + "<h3>SHOW JSON</h3>" + '</a><br>');
+
+            console.log(item_history);
+            item_history.unshift([item_data.name, key]);
+            if (item_history.length > 10) {
+                item_history.pop();
+            }
+            $('#history').empty();
+            var i = 1;
+            for (var tmp of item_history) {
+                $('#history').append(i + ' : ' + link_to_item(tmp[0], tmp[1]) + ' / ');
+                i++;
+            }
         }
 
         function click_json(key) {
@@ -322,7 +335,7 @@
             </header>
         </header>
 
-        <div class=js-tab-content>
+        <div class="js-tab-content">
             <div class="Main active" id="ItemSearch">
                 <div class="LeftArea">
                     <form name="search">
@@ -335,8 +348,7 @@
                 <div class="RightArea">
                     <div id="item_info">
                     </div>
-                    <pre id="json_info">
-          </pre>
+                    <pre id="json_info"></pre>
                 </div>
             </div>
 
@@ -358,6 +370,8 @@
                 </table>
             </div>
         </div>
+        <footer id="history">
+        </footer>
     </div>
 </body>
 
