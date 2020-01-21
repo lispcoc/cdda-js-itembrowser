@@ -383,7 +383,7 @@ class ItemClass {
             this.material_instance = [];
             var tmp_materials = this.getMaterial();
             for (var mat_id of tmp_materials) {
-                this.material_instance.push(new MaterialClass(mat_id));
+                this.material_instance.push(MaterialClass.searchData(mat_id));
             }
         }
         return this.material_instance;
@@ -418,7 +418,7 @@ class ItemClass {
             return false;
         }
         for (var m of this.getMaterialInstance()) {
-            if (m.getElecResist() <= 1) {
+            if (m.elec_resist <= 1) {
                 return true;
             }
         }
@@ -454,9 +454,7 @@ class ItemClass {
 
         string_html += Tr("素材") + ": ";
         for (var mat of this.getMaterialInstance()) {
-            if (mat) {
-                string_html += mat.getName() + ", ";
-            }
+            string_html += mat.name + ", ";
         }
         string_html += "<br>";
         if (this.getMinStrength() > 0) {
@@ -596,7 +594,7 @@ class ItemClass {
         var bash_resist = 0;
         if (this.isArmor()) {
             for (var m of this.getMaterialInstance()) {
-                bash_resist += m.getBashResist();
+                bash_resist += m.bash_resist;
             }
             bash_resist /= this.getMaterialInstance().length;
             bash_resist *= this.getMaterialThickness();
@@ -609,7 +607,7 @@ class ItemClass {
         var cut_resist = 0;
         if (this.isArmor()) {
             for (var m of this.getMaterialInstance()) {
-                cut_resist += m.getCutResist();
+                cut_resist += m.cut_resist;
             }
             cut_resist /= this.getMaterialInstance().length;
             cut_resist *= this.getMaterialThickness();
@@ -622,7 +620,7 @@ class ItemClass {
         var acid_resist = 0;
         if (this.isArmor()) {
             for (var m of this.getMaterialInstance()) {
-                acid_resist += m.getAcidResist();
+                acid_resist += m.acid_resist;
             }
             acid_resist /= this.getMaterialInstance().length;
             if (this.getEnvironmentalProtection() < 10) {
@@ -638,7 +636,7 @@ class ItemClass {
         var fire_resist = 0;
         if (this.isArmor()) {
             for (var m of this.getMaterialInstance()) {
-                fire_resist += m.getFireResist();
+                fire_resist += m.fire_resist;
             }
             fire_resist /= this.getMaterialInstance().length;
             if (this.getEnvironmentalProtection() < 10) {
