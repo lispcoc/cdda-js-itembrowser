@@ -98,7 +98,7 @@ class RequirementClass {
         if (this.json.tools) {
             for (var tool_selections of this.json.tools) {
                 var tmp_tool_selections = [];
-                for (tool of tool_selections) {
+                for (var tool of tool_selections) {
                     if (tool[2] == "LIST") {
                         var tmp_req = RequirementClass.searchData(tool[0]);
                         Array.prototype.push.apply(

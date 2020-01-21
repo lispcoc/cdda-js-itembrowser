@@ -11,7 +11,7 @@ class JsonFlagClass {
         for (var jo of mod_flags) {
             var tmp = new JsonFlagClass(jo);
             tmp.init();
-            tmp.is_mod = false;
+            tmp.is_mod = true;
         }
     }
 
