@@ -190,7 +190,7 @@ RecipeClass.prototype.getQualities = function() {
     if (!this.qualities) {
         var copy_from = this.getCopyFrom();
         if (this.json.qualities) {
-            this.qualities = this.json.qualities;
+            this.qualities = deep_copy(this.json.qualities);
         } else if (copy_from) {
             this.qualities = copy_from.getQualities();
         } else {
