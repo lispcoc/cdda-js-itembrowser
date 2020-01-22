@@ -364,11 +364,11 @@ class ItemClass extends GenericClass {
     }
 
     hasFlag(key_flag) {
-        this.getFlags().forEach(function(f) {
+        for (var f of this.getFlags()) {
             if (f == key_flag) {
                 return true;
             }
-        });
+        }
         return false;
     }
 

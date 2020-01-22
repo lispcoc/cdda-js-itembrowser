@@ -33,7 +33,7 @@ function Tr(id) {
     var num = 1;
     for (var v of val) {
         msg = msg.replace("$" + num, v);
-        console.log(v);
+        //console.log(v);
         num++;
     }
     return msg;
