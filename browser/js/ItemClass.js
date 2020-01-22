@@ -26,9 +26,9 @@ function convert_volume(volume) {
         var result1 = parseInt(volume.match(/[0-9]+/)); //因为存在"200ml"与"500 ml"
         var result2 = volume.match(/[A-z]+/);
         if (result2[0].toLowerCase() == "l") {
-            volume = result1[0] * 4;
+            volume = result1 * 4;
         } else if (result2[0].toLowerCase() == "ml") {
-            volume = result1[0] / 250;
+            volume = result1 / 250;
         } else {
             volume = 0;
         }
