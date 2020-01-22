@@ -8,7 +8,7 @@ function deep_copy(obj) {
 
 function convert_weight(weight) {
     if (typeof weight == "string") {
-        var result1 = weight.match(/[0-9]+/);
+        var result1 = parseInt(weight.match(/[0-9]+/));
         var result2 = weight.match(/[A-z]+/);
         if (result2[0].toLowerCase() == "kg") {
             weight = result1 * 1000;
@@ -23,7 +23,7 @@ function convert_weight(weight) {
 
 function convert_volume(volume) {
     if (typeof volume == "string") {
-        var result1 = volume.match(/[0-9]+/); //因为存在"200ml"与"500 ml"
+        var result1 = parseInt(volume.match(/[0-9]+/)); //因为存在"200ml"与"500 ml"
         var result2 = volume.match(/[A-z]+/);
         if (result2[0].toLowerCase() == "l") {
             volume = result1[0] * 4;
@@ -44,20 +44,30 @@ class ItemClass {
     static initAllItemData() {
         for (var item of items) {
             var it = new ItemClass(item);
-            it.init();
             it.is_mod_item = false;
         }
         for (var item of mod_items) {
             var it = new ItemClass(item);
-            it.init();
             it.is_mod_item = true;
+        }
+        var isCopyFromResolved = false;
+        while (!isCopyFromResolved) {
+            isCopyFromResolved = true;
+            for (var tmp of ItemClass.allItemData()) {
+                if (!tmp.valid) {
+                    tmp.init();
+                }
+                if (!tmp.valid) {
+                    isCopyFromResolved = false;
+                }
+            }
         }
     }
 
     static searchItemData(id) {
         var res = null;
         all_item_data.forEach(function(it) {
-            if (it.item_id == id) {
+            if (it.item_id == id && it.valid) {
                 res = it;
             }
         });
@@ -69,11 +79,8 @@ class ItemClass {
     }
 
     constructor(jo) {
-        this.json = jo;
-        this.basic_data = null;
-        if (jo["copy-from"]) {
-            this.loadCopyFrom(jo["copy-from"]);
-        }
+        this.json = deep_copy(jo);
+        this.original_json = deep_copy(jo);
 
         if (jo.id) {
             this.item_id = jo.id;
@@ -87,11 +94,18 @@ class ItemClass {
     }
 
     init() {
-        var jo = this.json;
-        this.load_basic_data(jo);
-        this.loadArmorData(jo);
-        this.loadGunData(jo);
-        this.loadBookData(jo);
+        if (this.json["copy-from"]) {
+            this.loadCopyFrom(this.json["copy-from"]);
+            if (!this.copy_from) {
+                return;
+            }
+        }
+        this.loadBasicData(this.json);
+        this.loadAmmoData(this.json);
+        this.loadArmorData(this.json);
+        this.loadGunData(this.json);
+        this.loadBookData(this.json);
+        this.valid = true;
     }
 
     setSlotVal(slot, name, val, set_after_clear = false) {
@@ -109,19 +123,14 @@ class ItemClass {
         }
     }
 
-    get valid() {
-        if (this.item_id == null) {
-            return false;
-        } else {
-            return true;
-        }
-    }
-
     loadCopyFrom(id) {
         var base = ItemClass.searchItemData(id);
-        if (base) {
+        if (base && base.valid) {
             var tmp = deep_copy(base);
             this.basic_data = tmp.basic_data;
+            if (tmp.ammo_data) {
+                this.ammo_data = tmp.ammo_data;
+            }
             if (tmp.armor_data) {
                 this.armor_data = tmp.armor_data;
             }
@@ -135,7 +144,33 @@ class ItemClass {
         }
     }
 
-    load_basic_data(jo) {
+    loadSlot(jo, slot, set_after_clear = []) {
+        for (var key in jo) {
+            var val = jo[key];
+            if (Array.isArray(slot[key])) {
+                if (!Array.isArray(val)) {
+                    val = [val];
+                }
+                if (set_after_clear.indexOf(key) >= 0) {
+                    slot[key] = val;
+                } else {
+                    Array.prototype.push.apply(slot[key], val);
+                }
+            } else {
+                slot[key] = val;
+            }
+        }
+    }
+
+    applyRelativeSetting(jo, slot) {
+        if (jo["proportional"]) {
+            for (var key in jo["proportional"]) {
+                slot[key] = slot[key] * jo["proportional"][key];
+            }
+        }
+    }
+
+    loadBasicData(jo) {
         var variables = {
             category: "",
             weight: 0,
@@ -176,18 +211,10 @@ class ItemClass {
         if (!this.basic_data) {
             this.basic_data = variables;
         }
-        for (var key in variables) {
-            if (jo[key]) {
-                if (key == "material") {
-                    this.setSlotVal(this.basic_data, key, jo[key], true);
-                } else {
-                    this.setSlotVal(this.basic_data, key, jo[key]);
-                }
-            }
-        }
-
+        this.loadSlot(jo, this.basic_data, ["material"]);
         this.basic_data.weight = convert_weight(this.basic_data.weight);
         this.basic_data.volume = convert_volume(this.basic_data.volume);
+        this.applyRelativeSetting(jo, this.basic_data);
     }
 
     loadArmorData(jo) {
@@ -214,20 +241,47 @@ class ItemClass {
         if (!this.armor_data) {
             this.armor_data = variables;
         }
-        for (var key in variables) {
-            if (jo[key]) {
-                if (key == "valid_mod_locations" || key == "modes") {
-                    this.setSlotVal(this.armor_data, key, jo[key], true);
-                } else {
-                    this.setSlotVal(this.armor_data, key, jo[key]);
-                }
-            }
-        }
+        this.loadSlot(jo, this.armor_data, []);
         this.armor_data.storage = convert_volume(this.armor_data.storage);
+        this.applyRelativeSetting(jo, this.basic_data);
+    }
+
+    loadAmmoData(jo) {
+        if (this.getType() == "AMMO") {
+            jo = this.json;
+        } else if (this.json["ammo_data"]) {
+            jo = this.json["ammo_data"];
+        } else {
+            return;
+        }
+
+        var variables = {
+            ammo_type: "",
+            casing: "",
+            drop: "",
+            drop_chance: 0.0,
+            drop_active: true,
+            damage: 0,
+            pierce: 0,
+            range: 0,
+            dispersion: 0,
+            recoil: 0,
+            count: 1,
+            loudness: 0,
+            effects: [],
+            prop_damage: 0.0,
+            show_stats: true,
+            __dummy: 0
+        };
+        if (!this.ammo_data) {
+            this.ammo_data = variables;
+        }
+        this.loadSlot(jo, this.ammo_data, []);
+        this.applyRelativeSetting(jo, this.ammo_data);
     }
 
     loadGunData(jo) {
-        if (this.getType() == "AMMO" || this.getType() == "GUN") {
+        if (this.getType() == "GUN") {
             jo = this.json;
         } else if (this.json["gun_data"]) {
             jo = this.json["gun_data"];
@@ -265,15 +319,8 @@ class ItemClass {
         if (!this.gun_data) {
             this.gun_data = variables;
         }
-        for (var key in variables) {
-            if (jo[key]) {
-                if (key == "valid_mod_locations" || key == "modes") {
-                    this.setSlotVal(this.gun_data, key, jo[key], true);
-                } else {
-                    this.setSlotVal(this.gun_data, key, jo[key]);
-                }
-            }
-        }
+        this.loadSlot(jo, this.gun_data, ["valid_mod_locations", "modes"]);
+        this.applyRelativeSetting(jo, this.gun_data);
     }
 
     loadBookData(jo) {
@@ -300,19 +347,12 @@ class ItemClass {
         if (!this.book_data) {
             this.book_data = variables;
         }
-        for (var key in variables) {
-            if (jo[key]) {
-                if (key == "valid_mod_locations" || key == "modes") {
-                    this.setSlotVal(this.book_data, key, jo[key], true);
-                } else {
-                    this.setSlotVal(this.book_data, key, jo[key]);
-                }
-            }
-        }
+        this.loadSlot(jo, this.book_data, ["valid_mod_locations", "modes"]);
+        this.applyRelativeSetting(jo, this.book_data);
     }
 
     getJson() {
-        return this.json;
+        return this.original_json;
     }
 
     get id() {

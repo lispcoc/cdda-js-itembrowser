@@ -216,7 +216,6 @@
             $('#item_info').append(item_recipe_html(key));
             $('#item_info').append('<a href=javascript:click_json("' + key + '")>' + "<h3>SHOW JSON</h3>" + '</a><br>');
 
-            console.log(item_history);
             item_history.unshift([item_data.name, key]);
             if (item_history.length > 10) {
                 item_history.pop();
