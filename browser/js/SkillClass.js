@@ -12,14 +12,14 @@ class SkillClass extends GenericClass {
     }
 
     get name() {
-        return this.json.name ? this.json.name : Tr("No name skill");
+        return this.json.name ? __(this.json.name) : Tr("No name skill");
     }
 
     get info() {
         if (this.json.info) {
-            return this.json.info;
+            return __(this.json.info);
         } else if (this.json.description) {
-            return this.json.description;
+            return __(this.json.description);
         }
         return Tr("No description.");
     }

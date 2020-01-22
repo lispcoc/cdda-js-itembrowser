@@ -17,9 +17,9 @@ class JsonFlagClass extends GenericClass {
 
     get info() {
         if (this.json.info) {
-            return this.json.info;
+            return __(this.json.info);
         } else if (this.json.description) {
-            return this.json.description;
+            return __(this.json.description);
         }
         return null;
     }

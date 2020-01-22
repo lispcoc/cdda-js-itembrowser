@@ -1,5 +1,16 @@
 var TranstateTable = {};
 
+function __(id) {
+    if (!env_lang) {
+        env_lang = "ja";
+    }
+    if (translate_table[env_lang][id]) {
+        return translate_table[env_lang][id];
+    } else {
+        return Tr(id);
+    }
+}
+
 function Tr(id) {
     var val = [];
     var msg = id;

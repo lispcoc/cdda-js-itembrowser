@@ -1,6 +1,7 @@
 json = require "json"
+supported_lang = {"ja", "zh_CN"}
 
-lang_file = "../lang/mo/ja/LC_MESSAGES/cataclysm-dda.mo"
+--lang_file = "../lang/mo/ja/LC_MESSAGES/cataclysm-dda.mo"
 ----lang_file = "../lang/mo/zh_CN/LC_MESSAGES/cataclysm-dda.mo"
 
 local gettext = require("gettext")
@@ -115,6 +116,7 @@ function is_ammunition_type(t)
 end
 
 function translate_table(lang_data, t)
+  --[[
   local translate_members = {
     "name",
     "description",
@@ -135,17 +137,9 @@ function translate_table(lang_data, t)
       end
     end
   end
+  ]]
   return t
 end
-
-local fd, err = io.open(lang_file, "rb")
-if not fd then
-  print("Error: Language file is not found.")
-  return nil, err
-end
-local raw_lang_data = fd:read("*all")
-fd:close()
-local lang_data = assert(gettext.parseData(raw_lang_data))
 
 local items = {}
 local mod_items = {}
@@ -168,6 +162,25 @@ local mod_ammunition_types = {}
 
 local list = io.open("rsc/list.txt")
 local filepath = list:read()
+
+io.output("rsc/lang.js")
+io.write("var translate_table = {};")
+
+for key, val in pairs(supported_lang) do
+  local lang_file = "../lang/mo/" .. val .."/LC_MESSAGES/cataclysm-dda.mo"
+
+  local fd, err = io.open(lang_file, "rb")
+  if not fd then
+    print("Error: Language file is not found. (" .. lang_file .. ")")
+    return nil, err
+  end
+  local raw_lang_data = fd:read("*all")
+  fd:close()
+  local lang_data = assert(gettext.parseData(raw_lang_data))
+  io.write("translate_table[\"" .. val .. "\"] = ")
+  io.write(json.encode(lang_data))
+  io.write(";\n")
+end
 
 while filepath do
   local jsonfile = io.open(filepath)

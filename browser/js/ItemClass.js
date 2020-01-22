@@ -287,13 +287,13 @@ class ItemClass extends GenericClass {
 
     get name() {
         if (!isString(this.basic_data.name)) {
-            return this.basic_data.name.str;
+            return __(this.basic_data.name.str);
         }
-        return this.basic_data.name;
+        return __(this.basic_data.name);
     }
 
     getDescription() {
-        return this.basic_data.description;
+        return __(this.basic_data.description);
     }
 
     getSymbol() {

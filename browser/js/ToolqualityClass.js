@@ -12,6 +12,6 @@ class ToolqualityClass extends GenericClass {
     }
 
     get name() {
-        return this.json.name ? this.json.name : Tr("No name tool quality");
+        return this.json.name ? __(this.json.name) : Tr("No name tool quality");
     }
 }

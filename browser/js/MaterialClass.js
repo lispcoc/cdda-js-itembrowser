@@ -12,7 +12,7 @@ class MaterialClass extends GenericClass {
     }
 
     get name() {
-        return this.json.name ? this.json.name : Tr("No name material");
+        return this.json.name ? __(this.json.name) : Tr("No name material");
     }
 
     get bash_resist() {

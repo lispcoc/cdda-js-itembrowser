@@ -12,14 +12,14 @@ class TechniqueClass extends GenericClass {
     }
 
     get name() {
-        return this.json.name ? this.json.name : Tr("No name technique");
+        return this.json.name ? __(this.json.name) : Tr("No name technique");
     }
 
     get info() {
         if (this.json.info) {
-            return this.json.info;
+            return __(this.json.info);
         } else if (this.json.description) {
-            return this.json.description;
+            return __(this.json.description);
         }
         return "No description.";
     }
