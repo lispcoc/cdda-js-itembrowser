@@ -1,42 +1,10 @@
-var all_requirement_data = [];
-
-class RequirementClass {
-    static initAllData() {
-        all_requirement_data = [];
-        for (var jo of requirements) {
-            var tmp = new RequirementClass(jo);
-            tmp.init();
-            tmp.is_mod = false;
-        }
-        for (var jo of mod_requirements) {
-            var tmp = new RequirementClass(jo);
-            tmp.init();
-            tmp.is_mod = true;
-        }
+class RequirementClass extends GenericClass {
+    static get all_json() {
+        return requirements;
     }
 
-    static searchData(id) {
-        console.log(id);
-        var res = null;
-        all_requirement_data.forEach(function(tmp) {
-            if (tmp.id == id) {
-                res = tmp;
-            }
-        });
-        return res;
-    }
-
-    static getAllData() {
-        return all_requirement_data;
-    }
-
-    constructor(jo) {
-        this.json = jo;
-        all_requirement_data.push(this);
-    }
-
-    init() {
-
+    static get all_mod_json() {
+        return mod_requirements;
     }
 
     get id() {

@@ -40,108 +40,32 @@ function isString(obj) {
     return typeof(obj) == "string" || obj instanceof String;
 }
 
-class ItemClass {
-    static initAllItemData() {
-        for (var item of items) {
-            var it = new ItemClass(item);
-            it.is_mod_item = false;
-        }
-        for (var item of mod_items) {
-            var it = new ItemClass(item);
-            it.is_mod_item = true;
-        }
-        var isCopyFromResolved = false;
-        while (!isCopyFromResolved) {
-            isCopyFromResolved = true;
-            for (var tmp of ItemClass.allItemData()) {
-                if (!tmp.valid) {
-                    tmp.init();
-                }
-                if (!tmp.valid) {
-                    isCopyFromResolved = false;
-                }
-            }
-        }
+class ItemClass extends GenericClass {
+    static get all_json() {
+        return items;
     }
 
-    static searchItemData(id) {
-        var res = null;
-        all_item_data.forEach(function(it) {
-            if (it.item_id == id && it.valid) {
-                res = it;
-            }
-        });
-        return res;
+    static get all_mod_json() {
+        return mod_items;
     }
 
-    static allItemData() {
-        return all_item_data;
-    }
-
-    constructor(jo) {
-        this.json = deep_copy(jo);
-        this.original_json = deep_copy(jo);
-
-        if (jo.id) {
-            this.item_id = jo.id;
-        } else if (jo.abstract) {
-            this.item_id = jo.abstract;
-        } else {
-            this.item_id = null;
-            return;
+    get id() {
+        if (this.json.id) {
+            return this.json.id;
+        } else if (this.json.abstract) {
+            return this.json.abstract;
         }
-        all_item_data.push(this);
+        return null;
     }
 
     init() {
-        if (this.json["copy-from"]) {
-            this.loadCopyFrom(this.json["copy-from"]);
-            if (!this.copy_from) {
-                return;
-            }
-        }
+        super.init();
+
         this.loadBasicData(this.json);
         this.loadAmmoData(this.json);
         this.loadArmorData(this.json);
         this.loadGunData(this.json);
         this.loadBookData(this.json);
-        this.valid = true;
-    }
-
-    setSlotVal(slot, name, val, set_after_clear = false) {
-        if (Array.isArray(slot[name])) {
-            if (!Array.isArray(val)) {
-                val = [val];
-            }
-            if (set_after_clear) {
-                slot[name] = val;
-            } else {
-                Array.prototype.push.apply(slot[name], val);
-            }
-        } else {
-            slot[name] = val;
-        }
-    }
-
-    loadCopyFrom(id) {
-        var base = ItemClass.searchItemData(id);
-        if (base && base.valid) {
-            var tmp = deep_copy(base);
-            this.basic_data = tmp.basic_data;
-            if (tmp.ammo_data) {
-                this.ammo_data = tmp.ammo_data;
-            }
-            if (tmp.armor_data) {
-                this.armor_data = tmp.armor_data;
-            }
-            if (tmp.gun_data) {
-                this.gun_data = tmp.gun_data;
-            }
-            if (tmp.book_data) {
-                this.book_data = tmp.book_data;
-            }
-            this.copy_from = base;
-        }
     }
 
     loadSlot(jo, slot, set_after_clear = []) {
@@ -353,10 +277,6 @@ class ItemClass {
 
     getJson() {
         return this.original_json;
-    }
-
-    get id() {
-        return this.item_id;
     }
 
     getType() {
@@ -743,7 +663,7 @@ class ItemClass {
                     string_html += Tr("弾夹") + ": ";
                     if (mag[1]) {
                         for (var tempmag of mag[1]) {
-                            var tempitem = ItemClass.searchItemData(tempmag);
+                            var tempitem = ItemClass.searchData(tempmag);
                             string_html += link_to_item(tempitem.name, tempitem.id) + " , ";
                         }
                     }

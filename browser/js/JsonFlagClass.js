@@ -1,41 +1,10 @@
-var all_flag_data = [];
-
-class JsonFlagClass {
-    static initAllData() {
-        all_flag_data = [];
-        for (var jo of flags) {
-            var tmp = new JsonFlagClass(jo);
-            tmp.init();
-            tmp.is_mod = false;
-        }
-        for (var jo of mod_flags) {
-            var tmp = new JsonFlagClass(jo);
-            tmp.init();
-            tmp.is_mod = true;
-        }
+class JsonFlagClass extends GenericClass {
+    static get all_json() {
+        return flags;
     }
 
-    static searchData(id) {
-        var res = null;
-        all_flag_data.forEach(function(tmp) {
-            if (tmp.id == id) {
-                res = tmp;
-            }
-        });
-        return res;
-    }
-
-    static getAllData() {
-        return all_flag_data;
-    }
-
-    constructor(jo) {
-        this.json = jo;
-        all_flag_data.push(this);
-    }
-
-    init() {
-
+    static get all_mod_json() {
+        return mod_flags;
     }
 
     get id() {
@@ -43,7 +12,7 @@ class JsonFlagClass {
     }
 
     get name() {
-        return this.json.name ? this.json.name : Tr("No name skill");
+        return this.json.name ? this.json.name : Tr("No name flag");
     }
 
     get info() {

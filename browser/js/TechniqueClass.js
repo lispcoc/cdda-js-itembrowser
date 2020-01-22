@@ -1,41 +1,10 @@
-var all_technique_data = [];
-
-class TechniqueClass {
-    static initAllData() {
-        all_technique_data = [];
-        for (var jo of techniques) {
-            var tmp = new TechniqueClass(jo);
-            tmp.init();
-            tmp.is_mod = false;
-        }
-        for (var q of mod_techniques) {
-            var tmp = new TechniqueClass(jo);
-            tmp.init();
-            tmp.is_mod = true;
-        }
+class TechniqueClass extends GenericClass {
+    static get all_json() {
+        return techniques;
     }
 
-    static searchData(id) {
-        var res = null;
-        all_technique_data.forEach(function(tmp) {
-            if (tmp.id == id) {
-                res = tmp;
-            }
-        });
-        return res;
-    }
-
-    static getAllData() {
-        return all_technique_data;
-    }
-
-    constructor(jo) {
-        this.json = jo;
-        all_technique_data.push(this);
-    }
-
-    init() {
-
+    static get all_mod_json() {
+        return mod_techniques;
     }
 
     get id() {

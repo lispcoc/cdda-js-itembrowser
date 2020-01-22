@@ -48,6 +48,7 @@
     <script type="text/javascript" src="js/jquery.tinysort.min.js"></script>
     <script type="text/javascript" src="rsc/data.js"></script>
     <script type="text/javascript" src="js/cdda.js"></script>
+    <script type="text/javascript" src="js/GenericClass.js"></script>
     <script type="text/javascript" src="js/JsonFlagClass.js"></script>
     <script type="text/javascript" src="js/MaterialClass.js"></script>
     <script type="text/javascript" src="js/ItemClass.js"></script>
@@ -77,7 +78,7 @@
 
         function item_data_html(id) {
             var string_html = "";
-            item_data = ItemClass.searchItemData(id);
+            item_data = ItemClass.searchData(id);
 
             string_html += item_data.dumpBasicData() + '<br>';
             if (item_data.copy_from) {
@@ -141,7 +142,7 @@
                         string_html += Tr("このレシピは必要スキルを満たしたときに自動で習得します。") + "<br>";
                     }
                     for (var b of recipe_data.getBookLearn()) {
-                        var item = ItemClass.searchItemData(b[0]);
+                        var item = ItemClass.searchData(b[0]);
                         string_html += Tr("$2 から適用スキルがレベル $1 で習得します。", b[1], link_to_item(item.name, item.id)) + "<br>";
                     }
                     string_html += "<br>";
@@ -173,7 +174,7 @@
                         for (var i = 0; i < t.length; ++i) {
                             if (t[i][0]) {
                                 console.log(t[i][0]);
-                                var item = ItemClass.searchItemData(t[i][0]);
+                                var item = ItemClass.searchData(t[i][0]);
                                 var charges = t[i][1];
                                 string_html += link_to_item(item.name, item.id);
                                 string_html += charges != -1 ? Tr("(充填量: $1)", charges) : "";
@@ -189,7 +190,7 @@
                         string_html += "&gt;";
                         for (var i = 0; i < c.length; ++i) {
                             if (c[i][0]) {
-                                var item = ItemClass.searchItemData(c[i][0]);
+                                var item = ItemClass.searchData(c[i][0]);
                                 var charges = c[i][1];
                                 string_html += Tr("$1 個の $2", charges, link_to_item(item.name, item.id));
                                 if (c.length - 1 > i) {
@@ -210,7 +211,7 @@
         function select_item(key) {
             $('#item_info').empty();
             $('#json_info').empty();
-            var item_data = ItemClass.searchItemData(key);
+            var item_data = ItemClass.searchData(key);
             var recipe_list = new RecipeListClass(key);
             $('#item_info').append(item_data_html(key));
             $('#item_info').append(item_recipe_html(key));
@@ -229,7 +230,7 @@
         }
 
         function click_json(key) {
-            var item_data = ItemClass.searchItemData(key);
+            var item_data = ItemClass.searchData(key);
             var recipe_list = new RecipeListClass(key);
             $('#json_info').empty();
             $('#json_info').append("<h4>Item</h3>");
@@ -249,7 +250,7 @@
         function search_data() {
             var key = search.textbox.value;
             $('#search_result').empty()
-            for (var item of ItemClass.allItemData()) {
+            for (var item of ItemClass.all_data) {
                 if (item.name && item.id && key) {
                     if (item.name.indexOf(key) != -1) {
                         if (item.is_mod_item) {
@@ -281,8 +282,8 @@
 
         $(document).ready(function() {
             $(".sortable").tablesorter();
-            ItemClass.initAllItemData();
-            SkillClass.initAllSkillData();
+            ItemClass.initAllData();
+            SkillClass.initAllData();
             ToolqualityClass.initAllData();
             JsonFlagClass.initAllData();
             MaterialClass.initAllData();
@@ -310,13 +311,13 @@
             var string_html = "";
             for (var item of items) {
                 if (item.id) {
-                    var item = ItemClass.searchItemData(item.id);
+                    var item = ItemClass.searchData(item.id);
                     string_html += generate_row(item);
                 }
             }
             for (var item of mod_items) {
                 if (item.id) {
-                    var item = ItemClass.searchItemData(item.id);
+                    var item = ItemClass.searchData(item.id);
                     string_html += generate_row(item);
                 }
             }

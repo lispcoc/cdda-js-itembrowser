@@ -304,31 +304,6 @@ RecipeClass.prototype.getComponents = function() {
     return this.components;
 };
 
-RecipeListClass = function(result) {
-    this.result = result;
-    this.json_list = internal_get_recipes_from_result(this.result);
-    this.list = [];
-    // @todo: id重複してるレシピを消す
-    for (var j of this.json_list) {
-        var id = null;
-        if (j.abstract) {
-            id = j.abstract;
-        } else {
-            id = j.id_suffix ? j.result + "_" + j.id_suffix : j.result;
-        }
-        if (id) {
-            this.list.push(new RecipeClass(id));
-        }
-    }
-};
-
-RecipeListClass.prototype.getRecipe = function(n) {
-    if (this.list[n]) {
-        return this.list[n];
-    }
-    return null;
-};
-
 RecipeClass.prototype.getbatch_time_factors = function() {
     if (!this.batch_time_factors) {
         var copy_from = this.getCopyFrom();
@@ -370,3 +345,27 @@ RecipeClass.prototype.hasFlag = function(key_flag) {
     }
     return false;
 };
+
+class RecipeListClass {
+    constructor(result) {
+        this.result = result;
+        this.json_list = internal_get_recipes_from_result(this.result);
+        this.list = [];
+        // @todo: id重複してるレシピを消す
+        for (var j of this.json_list) {
+            var id = null;
+            if (j.abstract) {
+                id = j.abstract;
+            } else {
+                id = j.id_suffix ? j.result + "_" + j.id_suffix : j.result;
+            }
+            if (id) {
+                this.list.push(new RecipeClass(id));
+            }
+        }
+    }
+
+    getRecipe(n) {
+        return this.list[n] ? this.list[n] : null;
+    }
+}

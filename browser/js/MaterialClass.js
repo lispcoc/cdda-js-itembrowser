@@ -1,41 +1,10 @@
-var all_material_data = [];
-
-class MaterialClass {
-    static initAllData() {
-        all_material_data = [];
-        for (var jo of materials) {
-            var tmp = new MaterialClass(jo);
-            tmp.init();
-            tmp.is_mod = false;
-        }
-        for (var jo of mod_materials) {
-            var tmp = new MaterialClass(jo);
-            tmp.init();
-            tmp.is_mod = true;
-        }
+class MaterialClass extends GenericClass {
+    static get all_json() {
+        return materials;
     }
 
-    static searchData(id) {
-        var res = null;
-        all_material_data.forEach(function(tmp) {
-            if (tmp.id == id) {
-                res = tmp;
-            }
-        });
-        return res;
-    }
-
-    static getAllData() {
-        return all_material_data;
-    }
-
-    constructor(jo) {
-        this.json = jo;
-        all_material_data.push(this);
-    }
-
-    init() {
-
+    static get all_mod_json() {
+        return mod_materials;
     }
 
     get id() {

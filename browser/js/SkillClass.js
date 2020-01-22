@@ -1,47 +1,14 @@
-var all_skill_data = [];
-
-class SkillClass {
-    static initAllSkillData() {
-        all_skill_data = [];
-        for (var skill of skills) {
-            var s = new SkillClass(skill);
-            s.init();
-            s.is_mod_skill = false;
-        }
-        for (var skill of mod_skills) {
-            var s = new SkillClass(skill);
-            s.init();
-            s.is_mod_skill = true;
-        }
+class SkillClass extends GenericClass {
+    static get all_json() {
+        return skills;
     }
 
-    static searchData(ident) {
-        var res = null;
-        all_skill_data.forEach(function(s) {
-            if (s.ident == ident) {
-                res = s;
-            }
-        });
-        return res;
+    static get all_mod_json() {
+        return mod_skills;
     }
 
-    static getAllData() {
-        return all_skill_data;
-    }
-
-    constructor(jo) {
-        this.json = jo;
-        if (jo.ident) {
-            this.ident = jo.ident;
-        } else {
-            this.ident = null;
-            return;
-        }
-        all_skill_data.push(this);
-    }
-
-    init() {
-
+    get id() {
+        return this.json.ident ? this.json.ident : null;
     }
 
     get name() {
