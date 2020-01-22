@@ -61,11 +61,13 @@ class ItemClass extends GenericClass {
     init() {
         super.init();
 
-        this.loadBasicData(this.json);
-        this.loadAmmoData(this.json);
-        this.loadArmorData(this.json);
-        this.loadGunData(this.json);
-        this.loadBookData(this.json);
+        if (this.valid) {
+            this.loadBasicData(this.json);
+            this.loadAmmoData(this.json);
+            this.loadArmorData(this.json);
+            this.loadGunData(this.json);
+            this.loadBookData(this.json);
+        }
     }
 
     loadSlot(jo, slot, set_after_clear = []) {
@@ -276,7 +278,7 @@ class ItemClass extends GenericClass {
     }
 
     getJson() {
-        return this.original_json;
+        return this.json;
     }
 
     getType() {
