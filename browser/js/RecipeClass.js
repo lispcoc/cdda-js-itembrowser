@@ -61,308 +61,280 @@ function internal_get_recipe_from_id(key_id, num = 0) {
     return null;
 }
 
-RecipeClass = function(id, nested = 0) {
-    this.id = id;
-    this.nested = nested;
-    this.json = internal_get_recipe_from_id(id, nested);
-};
-
-RecipeClass.prototype.getResult = function() {
-    return this.result;
-};
-
-RecipeClass.prototype.getJson = function() {
-    return this.json;
-};
-
-RecipeClass.prototype.getCopyFrom = function() {
-    if (this.json["copy-from"]) {
-        if (this.json["copy-from"] == this.id) {
-            return new RecipeClass(this.json["copy-from"], this.nested + 1);
-        }
-        return new RecipeClass(this.json["copy-from"], 0);
-    }
-    return null;
-};
-
-RecipeClass.prototype.getSkillUsed = function() {
-    if (!this.skill_used) {
-        var copy_from = this.getCopyFrom();
-        if (this.json.skill_used) {
-            this.skill_used = this.json.skill_used;
-        } else if (copy_from) {
-            this.skill_used = copy_from.getSkillUsed();
-        } else {
-            this.skill_used = "N/A";
-        }
-    }
-    return this.skill_used;
-};
-
-RecipeClass.prototype.getSkillsRequired = function() {
-    if (!this.skills_required) {
-        var copy_from = this.getCopyFrom();
-        if (this.json.skills_required) {
-            this.skills_required = this.json.skills_required;
-        } else if (copy_from) {
-            this.skills_required = copy_from.getSkillsRequired();
-        } else {
-            this.skills_required = [
-                []
-            ];
-        }
-    }
-    if (!Array.isArray(this.skills_required[0])) {
-        this.skills_required = [this.skills_required];
-    }
-    return this.skills_required;
-};
-
-RecipeClass.prototype.getDifficulty = function() {
-    if (!this.difficulty) {
-        var copy_from = this.getCopyFrom();
-        if (this.json.difficulty) {
-            this.difficulty = this.json.difficulty;
-        } else if (copy_from) {
-            this.difficulty = copy_from.getDifficulty();
-        } else {
-            this.difficulty = "0";
-        }
-    }
-    return this.difficulty;
-};
-
-RecipeClass.prototype.getTime = function() {
-    if (!this.time) {
-        var copy_from = this.getCopyFrom();
-        if (this.json.time) {
-            this.time = this.json.time;
-        } else if (copy_from) {
-            this.time = copy_from.getTime();
-        } else {
-            this.time = 0;
-        }
-    }
-    if (typeof this.time == "number") {
-        this.time = this.time / 6000;
-        //1回合=1秒=100点行动点数,60回合=60秒=1分钟=6000点行动点数
-        if (Number.isInteger(this.time)) {
-            this.time = this.time + "m";
-        } else {
-            var a = Math.floor(this.time);
-            var b = this.time - a;
-            b = Math.round(b * 60);
-            this.time = a + "m" + b + "s";
-        }
-    }
-    return this.time;
-};
-
-RecipeClass.prototype.getAutolearn = function() {
-    if (!this.autolearn) {
-        var copy_from = this.getCopyFrom();
-        if (this.json.autolearn) {
-            this.autolearn = this.json.autolearn;
-        } else if (copy_from) {
-            this.autolearn = copy_from.getAutolearn();
-        } else {
-            this.autolearn = false;
-        }
-    }
-    return this.autolearn;
-};
-
-RecipeClass.prototype.getBookLearn = function() {
-    if (!this.book_learn) {
-        var copy_from = this.getCopyFrom();
-        if (this.json.book_learn) {
-            this.book_learn = this.json.book_learn;
-        } else if (copy_from) {
-            this.book_learn = copy_from.getBookLearn();
-        } else {
-            this.book_learn = [];
-        }
-    }
-    return this.book_learn;
-};
-
-RecipeClass.prototype.getQualities = function() {
-    if (!this.qualities) {
-        var copy_from = this.getCopyFrom();
-        if (this.json.qualities) {
-            this.qualities = deep_copy(this.json.qualities);
-        } else if (copy_from) {
-            this.qualities = copy_from.getQualities();
-        } else {
-            this.qualities = [];
-        }
-    }
-    if (!Array.isArray(this.qualities)) {
-        this.qualities = [this.qualities];
+class RecipeClass extends GenericClass {
+    static get all_json() {
+        return recipes;
     }
 
-    if (this.json.using) {
-        console.log(this.json.using);
-        for (u of this.json.using) {
-            var req = RequirementClass.searchData(u[0]);
-            var r = req.getQualities(u[1]);
-            if (r.length > 0) {
-                console.log(r);
-                Array.prototype.push.apply(this.qualities, r);
+    static get all_mod_json() {
+        return mod_recipes;
+    }
+
+    static searchDataFromResult(result) {
+        var list = {};
+        var retval = [];
+        this.all_data.forEach(function(tmp) {
+            if (tmp.result == result && tmp.valid) {
+                list[tmp.id] = tmp;
             }
+        });
+        for (var key in list) {
+            retval.push(list[key]);
         }
+        return retval;
     }
 
-    return this.qualities;
-};
+    init() {
+        super.init();
 
-RecipeClass.prototype.getTools = function() {
-    if (!this.tools) {
-        this.tools = [];
+        if (this.valid) {
+            this.nested = 0;
 
-        if (this.json.using) {
-            console.log(this.json.using);
-            for (u of this.json.using) {
-                var req = RequirementClass.searchData(u[0]);
-                var r = req.getTools(u[1]);
-                if (r.length > 0) {
-                    console.log(r);
-                    Array.prototype.push.apply(this.tools, r);
+            if (this.json.skill_used) {
+                this.skill_used = this.json.skill_used;
+            } else if (!this.skill_used) {
+                this.skill_used = "N/A";
+            }
+
+            if (this.json.skills_required) {
+                this.skills_required = this.json.skills_required;
+                if (!Array.isArray(this.skills_required[0])) {
+                    this.skills_required = [this.skills_required];
                 }
+            } else if (!this.skills_required) {
+                this.skills_required = [
+                    []
+                ];
+            }
+
+            if (this.json.difficulty) {
+                this.difficulty = this.json.difficulty;
+            } else if (!this.difficulty) {
+                this.difficulty = 0;
+            }
+
+            if (this.json.time) {
+                this.time = this.json.time;
+            } else if (!this.time) {
+                this.time = 0;
+            }
+
+            if (this.json.autolearn) {
+                this.autolearn = this.json.autolearn;
+            } else if (!this.autolearn) {
+                this.autolearn = false;
+            }
+
+            if (this.json.book_learn) {
+                this.book_learn = this.json.book_learn;
+            } else if (!this.book_learn) {
+                this.book_learn = [];
+            }
+
+            if (this.json.batch_time_factors) {
+                this.batch_time_factors = this.json.batch_time_factors;
+                if (!Array.isArray(this.batch_time_factors[0])) {
+                    this.batch_time_factors = [this.batch_time_factors];
+                }
+            } else if (!this.batch_time_factors) {
+                this.batch_time_factors = [
+                    []
+                ];
+            }
+
+            if (this.json.flags) {
+                this.flags = this.json.flags;
+            } else if (!this.flags) {
+                this.flags = [
+                    []
+                ];
+            }
+
+            if (this.json.using) {
+                this.using = this.json.using;
+            } else if (!this.using) {
+                this.using = [];
+            }
+
+            if (this.json.tools) {
+                this.tools = this.json.tools;
+            } else if (!this.tools) {
+                this.tools = [];
+            }
+
+            if (this.json.components) {
+                this.components = this.json.components;
+            } else if (!this.components) {
+                this.components = [];
+            }
+
+            if (this.json.qualities) {
+                this.qualities = this.json.qualities;
+            } else if (!this.qualities) {
+                this.qualities = [];
             }
         }
+    }
 
-        var tmp_tools = [];
-        var copy_from = this.getCopyFrom();
-        if (this.json.tools) {
-            tmp_tools = this.json.tools;
-        } else if (copy_from) {
-            tmp_tools = copy_from.getTools();
+    get id() {
+        return this.result + this.id_suffix;
+    }
+
+    get id_suffix() {
+        return this.json.id_suffix ? this.json.id_suffix : "";
+    }
+
+    get result() {
+        if (this.json.result) {
+            return this.json.result;
+        } else if (this.json.abstract) {
+            return this.json.abstract;
         }
-        for (t1 of tmp_tools) {
-            var tmp_tools_2 = [];
-            for (t2 of t1) {
+        return null;
+    }
+
+    getResult() {
+        return this.result;
+    }
+
+    getJson() {
+        return this.json;
+    }
+
+    getCopyFrom() {
+        return this.copy_from ? this.copy_from : null;
+    }
+
+    getSkillUsed() {
+        return this.skill_used;
+    }
+
+    getSkillsRequired() {
+        return this.skills_required
+    }
+
+    getDifficulty() {
+        return this.difficulty;
+    }
+
+    getTime() {
+        var ret = this.time;
+        if (typeof ret == "number") {
+            ret = ret / 6000;
+            //1回合=1秒=100点行动点数,60回合=60秒=1分钟=6000点行动点数
+            if (Number.isInteger(ret)) {
+                ret = ret + "m";
+            } else {
+                var a = Math.floor(ret);
+                var b = ret - a;
+                b = Math.round(b * 60);
+                ret = a + "m" + b + "s";
+            }
+        }
+        return ret;
+    }
+
+    getAutolearn() {
+        return this.autolearn;
+    }
+
+    getBookLearn() {
+        return this.book_learn;
+    }
+
+    getQualities() {
+        var res = [];
+        for (var t1 of this.qualities) {
+            res.push(t1);
+        }
+        for (var u of this.using) {
+            var tmp_qualities = RequirementClass.searchData(u[0]).getQualities(u[1]);
+            for (var t1 of tmp_qualities) {
+                res.push(t1);
+            }
+        }
+        console.log(res);
+        return res;
+    }
+
+    getTools() {
+        var res = [];
+        for (var t1 of this.tools) {
+            var tmp_tools = [];
+            for (var t2 of t1) {
                 if (t2[2] == "LIST") {
-                    var req = RequirementClass.searchData(t2[0]);
-                    var r = req.getToolSelections(t2[1]);
-                    Array.prototype.push.apply(tmp_tools_2, r);
-                } else {
-                    if (t2) {
-                        tmp_tools_2.push(t2);
+                    for (var req_tool of RequirementClass.searchData(t2[0]).getToolSelections(t2[1])) {
+                        tmp_tools.push(req_tool);
                     }
+                } else {
+                    tmp_tools.push(t2);
                 }
             }
-            if (tmp_tools_2.length) {
-                this.tools.push(tmp_tools_2);
+            if (tmp_tools.length) {
+                res.push(tmp_tools);
             }
         }
+        for (var u of this.using) {
+            var tmp_tools = RequirementClass.searchData(u[0]).getToolSelections(u[1]);
+            if (tmp_tools.length) {
+                res.push(tmp_tools);
+            }
+        }
+        console.log(res);
+        return res;
     }
-    return this.tools;
-};
 
-RecipeClass.prototype.getComponents = function() {
-    if (!this.components) {
-        this.components = [];
+    getComponents() {
+        var res = [];
+        var reqs = {};
 
-        if (this.json.using) {
-            console.log(this.json.using);
-            for (u of this.json.using) {
-                var req = RequirementClass.searchData(u[0]);
-                var r = req.getComponents(u[1]);
-                if (r.length > 0) {
-                    console.log(r);
-                    Array.prototype.push.apply(this.components, r);
-                }
-            }
-        }
-
-        var tmp_components = [];
-        var copy_from = this.getCopyFrom();
-        if (this.json.components) {
-            tmp_components = this.json.components;
-        } else if (copy_from) {
-            tmp_components = copy_from.getComponents();
-        }
-        for (t1 of tmp_components) {
-            var tmp_components_2 = [];
-            for (t2 of t1) {
+        for (var t1 of this.components) {
+            var tmp_components = [];
+            for (var t2 of t1) {
                 if (t2[2] == "LIST") {
-                    var req = RequirementClass.searchData(t2[0]);
-                    var r = req.getComponentSelections(t2[1]);
-                    Array.prototype.push.apply(tmp_components_2, r);
-                } else {
-                    if (t2) {
-                        tmp_components_2.push(t2);
+                    for (var req_tool of RequirementClass.searchData(t2[0]).getComponentSelections(t2[1])) {
+                        tmp_components.push(req_tool);
                     }
+                } else {
+                    tmp_components.push(t2);
                 }
             }
-            if (tmp_components_2.length) {
-                this.components.push(tmp_components_2);
+            if (tmp_components.length) {
+                res.push(tmp_components);
             }
         }
-    }
-    return this.components;
-};
-
-RecipeClass.prototype.getbatch_time_factors = function() {
-    if (!this.batch_time_factors) {
-        var copy_from = this.getCopyFrom();
-        if (this.json.batch_time_factors) {
-            this.batch_time_factors = this.json.batch_time_factors;
-        } else if (copy_from) {
-            this.batch_time_factors = copy_from.getbatch_time_factors();
-        } else {
-            this.batch_time_factors = [
-                []
-            ];
+        for (var u of this.using) {
+            var tmp_components = RequirementClass.searchData(u[0]).getComponentSelections(u[1]);
+            if (tmp_components.length) {
+                res.push(tmp_components);
+            }
         }
+        console.log(res);
+        return res;
     }
-    if (!Array.isArray(this.batch_time_factors[0])) {
-        this.batch_time_factors = [this.batch_time_factors];
-    }
-    return this.batch_time_factors;
-};
 
-RecipeClass.prototype.getFlags = function() {
-    if (!this.flags) {
-        var copy_from = this.getCopyFrom();
-        if (this.json.flags) {
-            this.flags = this.json.flags;
-        } else if (copy_from) {
-            this.flags = copy_from.getFlags();
-        } else {
-            this.flags = [];
-        }
+    getbatch_time_factors() {
+        return this.batch_time_factors;
     }
-    return this.flags;
-};
 
-RecipeClass.prototype.hasFlag = function(key_flag) {
-    for (f of this.getFlags()) {
-        if (f == key_flag) {
-            return true;
-        }
+    getFlags() {
+        return this.flags;
     }
-    return false;
-};
+
+    hasFlag(key_flag) {
+        for (var f of this.getFlags()) {
+            if (f == key_flag) {
+                return true;
+            }
+        }
+        return false;
+    }
+}
 
 class RecipeListClass {
     constructor(result) {
         this.result = result;
-        this.json_list = internal_get_recipes_from_result(this.result);
-        this.list = [];
-        // @todo: id重複してるレシピを消す
-        for (var j of this.json_list) {
-            var id = null;
-            if (j.abstract) {
-                id = j.abstract;
-            } else {
-                id = j.id_suffix ? j.result + "_" + j.id_suffix : j.result;
-            }
-            if (id) {
-                this.list.push(new RecipeClass(id));
-            }
-        }
+        this.list = RecipeClass.searchDataFromResult(this.result);
     }
 
     getRecipe(n) {

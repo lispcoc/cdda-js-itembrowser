@@ -142,6 +142,7 @@
                     if (recipe_data.getAutolearn() == true) {
                         string_html += Tr("このレシピは必要スキルを満たしたときに自動で習得します。") + "<br>";
                     }
+                    console.log(recipe_data);
                     for (var b of recipe_data.getBookLearn()) {
                         var item = ItemClass.searchData(b[0]);
                         string_html += Tr("$2 から適用スキルがレベル $1 で習得します。", b[1], link_to_item(item.name, item.id)) + "<br>";
@@ -174,7 +175,6 @@
                         string_html += "&gt;";
                         for (var i = 0; i < t.length; ++i) {
                             if (t[i][0]) {
-                                console.log(t[i][0]);
                                 var item = ItemClass.searchData(t[i][0]);
                                 var charges = t[i][1];
                                 string_html += link_to_item(item.name, item.id);
@@ -282,6 +282,7 @@
         });
 
         $(document).ready(function() {
+            const startTime = Date.now();
             $(".sortable").tablesorter();
             ItemClass.initAllData();
             SkillClass.initAllData();
@@ -290,6 +291,9 @@
             MaterialClass.initAllData();
             TechniqueClass.initAllData();
             RequirementClass.initAllData();
+            RecipeClass.initAllData();
+            const endTime = Date.now();
+            console.log("Time: " + (endTime - startTime) + " ms");
         });
 
         function update_melee_list() {

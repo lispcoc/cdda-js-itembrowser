@@ -42,19 +42,21 @@ class RequirementClass extends GenericClass {
 
     getComponentSelections(multiplier) {
         var component_selections = [];
-        if (this.json.components[0]) {
-            for (var component of this.json.components[0]) {
-                if (component[2] == "LIST") {
-                    var tmp_req = RequirementClass.searchData(component[0]);
-                    Array.prototype.push.apply(
-                        component_selections,
-                        tmp_req.getComponentSelections(multiplier)
-                    );
-                } else {
-                    component_selections.push([
-                        component[0],
-                        component[1] * multiplier
-                    ]);
+        if (this.json.components) {
+            for (var components_set of this.json.components) {
+                for (var component of components_set) {
+                    if (component[2] == "LIST") {
+                        var tmp_req = RequirementClass.searchData(component[0]);
+                        Array.prototype.push.apply(
+                            component_selections,
+                            tmp_req.getComponentSelections(multiplier)
+                        );
+                    } else {
+                        component_selections.push([
+                            component[0],
+                            component[1] * multiplier
+                        ]);
+                    }
                 }
             }
         }
