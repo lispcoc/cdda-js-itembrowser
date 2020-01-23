@@ -1,0 +1,244 @@
+<html>
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+        }
+        /* Style the header */
+        
+        header {
+            background-color: #666;
+            padding: 2px;
+            text-align: center;
+            font-size: 20px;
+            color: white;
+        }
+        /* Create two columns/boxes that floats next to each other */
+        
+        nav {
+            float: left;
+            width: 20%;
+            background: #ccc;
+            padding: 20px;
+        }
+        /* Style the list inside the menu */
+        
+        nav ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        
+        article {
+            float: left;
+            padding: 20px;
+            width: 80%;
+            background-color: #f1f1f1;
+        }
+        /* Clear floats after the columns */
+        
+        section:after {
+            content: "";
+            display: table;
+            clear: both;
+        }
+        /* Style the footer */
+        
+        footer {
+            background-color: #777;
+            padding: 10px;
+            text-align: center;
+            color: white;
+        }
+        /* Responsive layout - makes the two columns/boxes stack on top of each other instead of next to each other, on small screens */
+        
+        @media (max-width: 600px) {
+            nav,
+            article {
+                width: 100%;
+                height: auto;
+            }
+        }
+    </style>
+    <script src="js/jquery-3.0.0.min.js"></script>
+    <script type="text/javascript" src="setting.js"></script>
+    <script type="text/javascript" src="js/jquery.tablesorter.min.js"></script>
+    <script type="text/javascript" src="js/jquery.tinysort.min.js"></script>
+    <script type="text/javascript" src="rsc/data.js"></script>
+    <script type="text/javascript" src="rsc/lang.js"></script>
+    <script type="text/javascript" src="js/cdda.js"></script>
+    <script type="text/javascript" src="js/GenericClass.js"></script>
+    <script type="text/javascript" src="js/JsonFlagClass.js"></script>
+    <script type="text/javascript" src="js/MaterialClass.js"></script>
+    <script type="text/javascript" src="js/ItemClass.js"></script>
+    <script type="text/javascript" src="js/ItemGroupClass.js"></script>
+    <script type="text/javascript" src="js/RequirementClass.js"></script>
+    <script type="text/javascript" src="js/RecipeClass.js"></script>
+    <script type="text/javascript" src="js/TechniqueClass.js"></script>
+    <script type="text/javascript" src="js/SkillClass.js"></script>
+    <script type="text/javascript" src="js/ToolqualityClass.js"></script>
+    <script type="text/javascript" src="js/AmmunitiontypeClass.js"></script>
+    <script type="text/javascript" src="js/Transrate.js"></script>
+    <script type="text/javascript" src="js/json-syntaxHighlight.js"></script>
+    <script type="text/javascript" src="js/lang/en.js"></script>
+    <script type="text/javascript" src="js/lang/zh_CN.js"></script>
+    <script type="text/javascript">
+        //When the page is done loading
+        $(document).ready(function() {
+            getLanguage();
+            /*
+            $(".sortable").tablesorter();
+            SkillClass.initAllData();
+            ToolqualityClass.initAllData();
+            JsonFlagClass.initAllData();
+            MaterialClass.initAllData();
+            TechniqueClass.initAllData();
+            RequirementClass.initAllData();
+            RecipeClass.initAllData();
+            */
+            const startTime = Date.now();
+            ItemClass.initAllData();
+            updateItemList()
+            const endTime = Date.now();
+            console.log("Time: " + (endTime - startTime) + " ms");
+        });
+
+        const _debug = 0;
+
+        function debug(msg) {
+            _debug ? console.log(msg) : 0;
+        }
+
+        //Adds an item type if it does not already exists in the list
+        function addItemTypeToList(type) {
+            for (i = 0; i < document.getElementById("itemType").length; ++i) {
+                if (document.getElementById("itemType").options[i].value == type) {
+                    return
+                }
+            }
+            var x = document.getElementById("itemType");
+            var option = document.createElement("option");
+            option.text = type;
+            option.value = type;
+            x.add(option);
+        }
+
+        //When the item type select box is changed
+        function itemType_change() {
+            //updateItemList()
+        }
+
+        //When the OK button is clicked
+        function btn_OK_Click() {
+            updateItemList()
+        }
+
+        //Gets the value of the item type select element
+        function get_itemType_value() {
+            return document.getElementById("itemType").value;
+        }
+
+        //When an item from the list is clicked
+        function select_item(itemID) {
+            debug("[select_item]: itemID = " + itemID);
+            createResultsTable(itemID);
+        }
+
+
+        //Creates the results table from an item and itemgroups
+        function createResultsTable(itemID) {
+            var htmlString = "<table>";
+            var itemEntry;
+            debug(itemgroups);
+            for (var itemgroup of itemgroups) {
+                if (itemgroup.id) {
+                    debug("[createResultsTable]: itemgroup.id = " + itemgroup.id);
+                    itemEntry = getItemEntryFromItemGroup(itemID, itemgroup)
+                    if (itemEntry) {
+                        htmlString += "<tr>";
+                        htmlString += "<td>" + itemgroup.id + "</td>";
+                        htmlString += "<td>" + itemEntry[1] + "</td>";
+                        htmlString += "</tr>";
+                    }
+                }
+            }
+            htmlString += "</table>";
+            updateResultsTable(htmlString);
+        }
+
+        //Returns that item list entry from the item group.
+        function getItemEntryFromItemGroup(itemID, itemgroup) {
+            debug("[getItemEntryFromItemGroup]: itemgroup = " + itemgroup);
+            debug("[getItemEntryFromItemGroup]: itemgroup.type = " + itemgroup.type);
+            if (itemgroup.items && itemgroup.type == "item_group") {
+                debug("[getItemEntryFromItemGroup]: itemgroup.items[0] = " + itemgroup.items[0]);
+                for (var itemInGroup of itemgroup.items) {
+                    if (itemInGroup[0] == itemID) {
+                        return itemInGroup;
+                    }
+                }
+            }
+            return false;
+        }
+
+        //When an item from the list is clicked
+        function updateResultsTable(htmlString) {
+            document.getElementById("itemGroupResults").innerHTML = htmlString;
+        }
+
+        //Updates the list of items on the left
+        function updateItemList() {
+            document.getElementById("itemList").innerHTML = "";
+            var item_types = {};
+            for (var item of ItemClass.all_data) {
+                debug(item.name);
+                item_types[item.type] = 1;
+                if (item.type == get_itemType_value() || get_itemType_value() == "Any") {
+                    $('#itemList').append(
+                        '<a href=javascript:select_item("' + item.id + '")>' + item.name + '</a><br>'
+                    );
+                }
+            }
+            for (var item_type in item_types) {
+                addItemTypeToList(item_type);
+            }
+        }
+    </script>
+</head>
+
+<body>
+
+    <header>
+        <h2>Itemgroups analyser</h2>
+    </header>
+
+    <section>
+        <nav>
+            <ul>
+                <li>Item type</li>
+                <li> <select id="itemType" onchange="itemType_change()"><option value = "Any">Any</option></select></li>
+                <li> <button onclick="btn_OK_Click()">OK</button> </li>
+            </ul>
+            <div id="itemList">
+
+            </div>
+        </nav>
+
+        <article>
+            <h1>Results</h1>
+            <p id="itemGroupResults">Select a category and subcategory on the left and press OK</p>
+        </article>
+    </section>
+
+    <footer>
+        <p>Footer</p>
+    </footer>
+
+</body>
+
+</html>

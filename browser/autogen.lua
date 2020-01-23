@@ -12,13 +12,13 @@ recipe_type = "recipe"
 flag_type = "json_flag"
 item_action_type = "item_action"
 ITEM_CATEGORY_type = "ITEM_CATEGORY"
-item_group_type = "item_group"
 material_type = "material"
 technique_type = "technique" 
 skill_type = "skill"
 tool_quality_type = "tool_quality"
 requirement_type = "requirement"
 ammunition_type = "ammunition_type"
+itemgroups_type = "item_group"
 
 item_types = {
   "AMMO",
@@ -115,6 +115,13 @@ function is_ammunition_type(t)
   return false
 end
 
+function is_itemgroups_type(t)
+  if t == itemgroups_type then
+    return true
+  end
+  return false
+end
+
 function translate_table(lang_data, t)
   --[[
   local translate_members = {
@@ -159,6 +166,7 @@ local tool_qualitys = {}
 local mod_tool_qualitys = {}
 local ammunition_types = {}
 local mod_ammunition_types = {}
+local itemgroups = {}
 
 local list = io.open("rsc/list.txt")
 local filepath = list:read()
@@ -218,7 +226,9 @@ while filepath do
           table.insert(tool_qualitys, new_val)
         elseif is_ammunition_type(type_val) then
           new_val = translate_table(lang_data, val)
-          table.insert(ammunition_types, new_val)			  
+          table.insert(ammunition_types, new_val)
+        elseif is_itemgroups_type(type_val) then
+          table.insert(itemgroups, translate_table(lang_data, val)) 
         end
       end
     end
@@ -287,18 +297,18 @@ for _, mod_ident in pairs(valid_mod) do
             elseif is_flag_type(type_val) then
               new_val = translate_table(lang_data, val)
               table.insert(mod_flags, new_val)
-        elseif is_technique_type(type_val) then
-          new_val = translate_table(lang_data, val)
-          table.insert(mod_techniques, new_val)
-        elseif is_skill_type(type_val) then
-          new_val = translate_table(lang_data, val)
-          table.insert(mod_skills, new_val)
-        elseif is_tool_quality_type(type_val) then
-          new_val = translate_table(lang_data, val)
-          table.insert(mod_tool_qualitys, new_val)
-        elseif is_ammunition_type(type_val) then
-          new_val = translate_table(lang_data, val)
-          table.insert(mod_ammunition_types, new_val)		  
+            elseif is_technique_type(type_val) then
+              new_val = translate_table(lang_data, val)
+              table.insert(mod_techniques, new_val)
+            elseif is_skill_type(type_val) then
+              new_val = translate_table(lang_data, val)
+              table.insert(mod_skills, new_val)
+            elseif is_tool_quality_type(type_val) then
+              new_val = translate_table(lang_data, val)
+              table.insert(mod_tool_qualitys, new_val)
+            elseif is_ammunition_type(type_val) then
+              new_val = translate_table(lang_data, val)
+              table.insert(mod_ammunition_types, new_val)		  
             end
           end
         end
@@ -382,6 +392,10 @@ io.write(";\n")
 
 io.write("var mod_flags = ")
 io.write(json.encode(mod_flags))
+io.write(";\n")
+
+io.write("var itemgroups = ")
+io.write(json.encode(itemgroups))
 io.write(";\n")
 
 --[[

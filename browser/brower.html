@@ -75,7 +75,6 @@
         });
         var melee_list_cache = false;
         var item_history = [];
-        getLanguage()
 
         function item_data_html(id) {
             var string_html = "";
@@ -282,6 +281,7 @@
         });
 
         $(document).ready(function() {
+            getLanguage()
             const startTime = Date.now();
             $(".sortable").tablesorter();
             ItemClass.initAllData();

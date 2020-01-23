@@ -285,6 +285,10 @@ class ItemClass extends GenericClass {
         return this.json.type;
     }
 
+    get type() {
+        return this.json.type;
+    }
+
     get name() {
         if (!isString(this.basic_data.name)) {
             return __(this.basic_data.name.str);
