@@ -123,6 +123,7 @@ class ItemClass extends GenericClass {
             phase: "SOLID",
             capacity: null,
             calories: 0,
+            quench: 0,
             fun: 0,
             healthy: 0,
             spoils_in: null,
@@ -428,11 +429,11 @@ class ItemClass extends GenericClass {
         }
 
         if (this.getType() == "COMESTIBLE") {
-            string_html += Tr("カロリー") + ": " + this.calories + "<br>";
-            string_html += Tr("水分") + ": " + this.quench + "<br>";
-            string_html += Tr("心情値") + ": " + this.fun + "<br>";
-            string_html += Tr("健康值") + ": " + this.healthy + "<br>";
-            string_html += Tr("保存期間") + ": " + this.spoils_in + "<br>";
+            string_html += Tr("カロリー") + ": " + this.basic_data.calories + "<br>";
+            string_html += Tr("水分") + ": " + this.basic_data.quench + "<br>";
+            string_html += Tr("心情値") + ": " + this.basic_data.fun + "<br>";
+            string_html += Tr("健康值") + ": " + this.basic_data.healthy + "<br>";
+            string_html += Tr("保存期間") + ": " + this.basic_data.spoils_in + "<br>";
         }
         if (this.capacity != null) {
             string_html += Tr("弾容量") + ": " + this.capacity + "<br>";
