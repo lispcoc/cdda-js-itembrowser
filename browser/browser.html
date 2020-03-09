@@ -68,10 +68,14 @@
             $('#title_info').append('<a href=javascript:select_tab("ItemSearch")>' + Tr("アイテム検索") + '</a>');
             $('#title_info').append(' ');
             $('#title_info').append('<a href=javascript:select_tab("MeleeList")>' + Tr("近接武器リスト") + '</a>');
-            $('#input_box').append('<input type="text" name="textbox" onkeyup="search_data()" placeholder=' + Tr("検索キーワードを入力してください") + '>');
+            $('#input_box').append('<div><input type="text" name="textbox" onkeyup="search_data()" placeholder=' + Tr("検索キーワードを入力してください") + '></div>');
             $(document).on("keypress", "input:not(.allow_submit)", function(event) {
                 return event.which != 13;
             });
+            $('#input_box').append('<div><a href=javascript:$(\'#input_opt\').toggle()>' + Tr("検索オプション") + '</a></div>');
+            $('#input_box').append('<div id="input_opt"></div>');
+            $('#input_opt').append('<input type="checkbox" name="opt_use_id">' + Tr('IDで検索'));
+            $('#input_opt').hide();
         });
         var melee_list_cache = false;
         var item_history = [];
@@ -252,14 +256,25 @@
             $('#search_result').empty()
             for (var item of ItemClass.all_data) {
                 if (item.name && item.id && key) {
+                    var res = item.name;
+                    var found = false;
                     if (item.name.indexOf(key) != -1) {
+                        found = true;
+                    }
+                    if (search.opt_use_id.checked) {
+                        res += ' (id: ' + item.id + ')';
+                        if (item.id.indexOf(key) != -1) {
+                            found = true;
+                        }
+                    }
+                    if (found) {
                         if (item.is_mod_item) {
                             $('#search_result').append(
-                                '<a href=javascript:select_item("' + item.id + '")>[MOD]' + item.name + '</a><br>'
+                                '<a href=javascript:select_item("' + item.id + '")>[MOD]' + res + '</a><br>'
                             );
                         } else {
                             $('#search_result').append(
-                                '<a href=javascript:select_item("' + item.id + '")>' + item.name + '</a><br>'
+                                '<a href=javascript:select_item("' + item.id + '")>' + res + '</a><br>'
                             );
                         }
                     }
