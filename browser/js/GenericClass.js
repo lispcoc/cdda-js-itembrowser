@@ -15,7 +15,9 @@ class GenericClass {
         }
 
         var isCopyFromResolved = false;
+        var pre_remains = 0;
         while (!isCopyFromResolved) {
+            var remains = 0;
             isCopyFromResolved = true;
             for (var tmp of this.all_data) {
                 if (!tmp.valid) {
@@ -23,8 +25,14 @@ class GenericClass {
                 }
                 if (!tmp.valid) {
                     isCopyFromResolved = false;
+                    remains++;
                 }
             }
+            // Prevent infinite loop by invalid "copy-from".
+            if (pre_remains != 0 && remains == pre_remains) {
+                break;
+            }
+            pre_remains = remains;
         }
         console.log(this.all_data);
     }

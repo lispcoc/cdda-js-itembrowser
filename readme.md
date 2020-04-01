@@ -20,6 +20,9 @@ https://github.com/lispcoc/cdda-js-itembrowser/archive/master.zip
 4. 読み込みが終わったら、適当なキーを押してウィンドウを閉じます。
 5. アイテムを検索したい場合はbrowser.htmlを、アイテムグループを検索したい場合はitem_itemgroup_analyser.htmlをWebブラウザで開いてください。
 
+## 技術的制約
+- あくまでJsonから読み取れる情報をもとに生成しているため、ハードコードされた部分については未サポートになります。
+
 ## バグ報告・開発協力
 Githubリポジトリにて、Issueやプルリクエストは随時受け付けています。
 

@@ -19,6 +19,9 @@ tool_quality_type = "tool_quality"
 requirement_type = "requirement"
 ammunition_type = "ammunition_type"
 itemgroups_type = "item_group"
+mapgen_type = "mapgen"
+overmap_terrain_type = "overmap_terrain"
+palette_type = "palette"
 
 item_types = {
   "AMMO",
@@ -122,29 +125,28 @@ function is_itemgroups_type(t)
   return false
 end
 
-function translate_table(lang_data, t)
-  --[[
-  local translate_members = {
-    "name",
-    "description",
-    "info",
-    "str"
-  }
-  for key, val in pairs(t) do
-    if type(val) == "table" then
-      t[key] = translate_table(lang_data, val)
-    else
-    for mkey, mval in pairs(translate_members) do
-        if key == mval then
-          if lang_data[val] then
-            t[key] = lang_data[val]
-            break
-          end
-        end
-      end
-    end
+function is_mapgen_type(t)
+  if t == mapgen_type then
+    return true
   end
-  ]]
+  return false
+end
+
+function is_overmap_terrain_type(t)
+  if t == overmap_terrain_type then
+    return true
+  end
+  return false
+end
+
+function is_palette_type(t)
+  if t == palette_type then
+    return true
+  end
+  return false
+end
+
+function translate_table(lang_data, t)
   return t
 end
 
@@ -167,6 +169,9 @@ local mod_tool_qualitys = {}
 local ammunition_types = {}
 local mod_ammunition_types = {}
 local itemgroups = {}
+local mapgens = {}
+local overmap_terrains = {}
+local palettes = {}
 
 local list = io.open("rsc/list.txt")
 local filepath = list:read()
@@ -229,6 +234,12 @@ while filepath do
           table.insert(ammunition_types, new_val)
         elseif is_itemgroups_type(type_val) then
           table.insert(itemgroups, translate_table(lang_data, val)) 
+        elseif is_mapgen_type(type_val) then
+          table.insert(mapgens, translate_table(lang_data, val))
+        elseif is_overmap_terrain_type(type_val) then
+          table.insert(overmap_terrains, translate_table(lang_data, val))
+        elseif is_palette_type(type_val) then
+          table.insert(palettes, translate_table(lang_data, val))
         end
       end
     end
@@ -398,90 +409,14 @@ io.write("var itemgroups = ")
 io.write(json.encode(itemgroups))
 io.write(";\n")
 
---[[
-  anatomy
-  bionic
-  body_part
-  construction
-  MONSTER_BLACKLIST
-  speech
-  dream
-  effect_type
-  emit
-  fault
-  json_flag
-  furniture
-  EXTERNAL_OPTION
-  gate
-  harvest
-  snippet
-  nil
-  item_action
-  ITEM_CATEGORY
-  item_group
-  nil
-  martial_art
-  material
-  monstergroup
-  MONSTER
-  monster_attack
-  MONSTER_FACTION
-  morale_type
-  overmap_terrain
-  city_building
-  mutation
-  mutation_category
-  overlay_order
-  overmap_location
-  overmap_connection
-  overmap_special
-  activity_type
-  profession_item_substitutions
-  profession
-  region_settings
-  vehicle_placement
-  vehicle_spawn
-  rotatable_symbol
-  skill
-  SPECIES
-  start_location
-  technique
-  terrain
-  tool_quality
-  trap
-  tutorial_messages
-  vehicle_group
-  vehicle_part
-  vitamin
-  AMMO
-  ammunition_type
-  GENERIC
-  GUN
-  ARMOR
-  BIONIC_ITEM
-  COMESTIBLE
-  CONTAINER
-  TOOL
-  MIGRATION
-  GUNMOD
-  TOOLMOD
-  TOOL_ARMOR
-  BOOK
-  MAGAZINE
-  ENGINE
-  WHEEL
-  mapgen
-  palette
-  npc_class
-  epilogue
-  faction
-  mission_definition
-  npc
-  talk_topic
-  recipe_category
-  recipe
-  uncraft
-  requirement
-  scenario
-  vehicle
-]]
+io.write("var mapgens = ")
+io.write(json.encode(mapgens))
+io.write(";\n")
+
+io.write("var overmap_terrains = ")
+io.write(json.encode(overmap_terrains))
+io.write(";\n")
+
+io.write("var palettes = ")
+io.write(json.encode(palettes))
+io.write(";\n")

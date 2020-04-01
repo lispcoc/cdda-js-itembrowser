@@ -405,7 +405,7 @@ class ItemClass extends GenericClass {
 
     dumpBasicData() {
         var string_html = "";
-        string_html += "<h2>" + this.displayNameWithSymbol() + "</h3>";
+        string_html += "<h2>" + this.displayNameWithSymbol() + "</h2>";
         string_html += "<p>";
         string_html += "id: " + this.id + "<br>";
         string_html += Tr("容積") + ": " + this.getVolume() * 0.25 + " L<br>";
