@@ -323,15 +323,15 @@ class ItemClass extends GenericClass {
         return this.basic_data.weight;
     }
 
-    getBashing() {
+    get bashing() {
         return this.basic_data.bashing;
     }
 
-    getCutting() {
+    get cutting() {
         return this.basic_data.cutting;
     }
 
-    getToHit() {
+    get to_hit() {
         return this.basic_data.to_hit;
     }
 
@@ -412,13 +412,13 @@ class ItemClass extends GenericClass {
         string_html += "id: " + this.id + "<br>";
         string_html += Tr("容積") + ": " + this.getVolume() * 0.25 + " L<br>";
         string_html += Tr("重量") + ": " + this.getWeight() * 0.001 + " kg<br>";
-        string_html += Tr("打撃") + ": " + this.getBashing() + " ";
+        string_html += Tr("打撃") + ": " + this.bashing + " ";
         if (this.hasFlag("STAB") || this.hasFlag("SPEAR")) {
-            string_html += Tr("刺撃") + ": " + this.getCutting() + " ";
+            string_html += Tr("刺撃") + ": " + this.cutting + " ";
         } else {
-            string_html += Tr("斬撃") + ": " + this.getCutting() + " ";
+            string_html += Tr("斬撃") + ": " + this.cutting + " ";
         }
-        string_html += Tr("命中ボーナス") + ": " + this.getToHit() + "<br>";
+        string_html += Tr("命中ボーナス") + ": " + this.to_hit + "<br>";
         string_html += Tr("攻撃コスト") + ": " + this.getAtkCost() + "<br>";
 
         string_html += Tr("素材") + ": ";
