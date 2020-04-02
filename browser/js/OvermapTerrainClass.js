@@ -17,7 +17,13 @@ class OvermapTerrainClass extends GenericClass {
     }
 
     get name() {
-        return this._name ? __(this._name) : "No name overmap_terrain";
+        if (this.json.name) {
+            if (this.json.name.str) {
+                return __(this.json.name.str);
+            }
+            return __(this.json.name);
+        }
+        return Tr("No name overmap_terrain");
     }
 
     set name(name) {

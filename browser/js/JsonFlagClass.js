@@ -12,7 +12,13 @@ class JsonFlagClass extends GenericClass {
     }
 
     get name() {
-        return this.json.name ? this.json.name : Tr("No name flag");
+        if (this.json.name) {
+            if (this.json.name.str) {
+                return __(this.json.name.str);
+            }
+            return __(this.json.name);
+        }
+        return Tr("No name flag");
     }
 
     get info() {
