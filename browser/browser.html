@@ -74,11 +74,20 @@
             });
             $('#input_box').append('<div><a href=javascript:$(\'#input_opt\').toggle()>' + Tr("検索オプション") + '</a></div>');
             $('#input_box').append('<div id="input_opt"></div>');
-            $('#input_opt').append('<input type="checkbox" name="opt_use_id">' + Tr('IDで検索'));
+            $('#input_opt').append('<label><input type="radio" name="serach_opt" value="name" checked>' + Tr('名前で検索') + '</label><br>');
+            $('#input_opt').append('<label><input type="radio" name="serach_opt" value="id">' + Tr('IDで検索') + '</label><br>');
+            $('#input_opt').append('<label><input type="radio" name="serach_opt" value="quality">' + Tr('性能で検索') + '</label><br>');
+            $('#input_opt').append('<label><input type="radio" name="serach_opt" value="component">' + Tr('製作に必要な材料で検索') + '</label><br>');
+            $('#input_opt').append('<label><input type="radio" name="serach_opt" value="used_skill">' + Tr('製作時の使用スキルで検索') + '</label><br>');
+            $('#input_opt').append('<label><input type="radio" name="serach_opt" value="req_skill">' + Tr('レシピ習得条件スキルで検索') + '</label><br>');
+            $('#input_opt').append('<label><input type="radio" name="serach_opt" value="req_quality">' + Tr('製作に必要な性能で検索') + '</label><br>');
+            $('#input_opt').append('<label><input type="radio" name="serach_opt" value="req_tool">' + Tr('製作に必要な道具で検索') + '</label><br>');
+            $('#input_opt').append('<label><input type="checkbox" name="show_search_time">' + Tr('検索時間を表示') + '</label><br>');
             $('#input_opt').hide();
         });
         var melee_list_cache = false;
         var item_history = [];
+        var timer_search_input;
 
         function item_data_html(id) {
             var string_html = "";
@@ -252,33 +261,82 @@
         }
 
         function search_data() {
+            $('#search_result').empty();
+            $('#search_result').append(__('検索中…'));
+            // 一定時間を待って入力完了と判断 
+            if (timer_search_input) {
+                clearTimeout(timer_search_input);
+            }
+            timer_search_input = setTimeout(search_data_callback, 700);
+        }
+
+        function search_data_callback() {
+            const startTime = Date.now();
             var key = search.textbox.value;
+            var search_result = '';
             $('#search_result').empty()
             for (var item of ItemClass.all_data) {
                 if (item.name && item.id && key) {
                     var res = item.name;
                     var found = false;
-                    if (item.name.indexOf(key) != -1) {
-                        found = true;
-                    }
-                    if (search.opt_use_id.checked) {
-                        res += ' (id: ' + item.id + ')';
-                        if (item.id.indexOf(key) != -1) {
-                            found = true;
-                        }
+                    switch (search.serach_opt.value) {
+                        case 'name':
+                            if (item.name.indexOf(key) != -1) {
+                                found = true;
+                            }
+                            break;
+                        case 'id':
+                            res += ' (id: ' + item.id + ')';
+                            if (item.id.indexOf(key) != -1) {
+                                found = true;
+                            }
+                            break;
+                        case 'quality':
+                            if (item.stringQualities().indexOf(key) != -1) {
+                                found = true;
+                            }
+                            break;
+                        case 'component':
+                            if (item.stringComponents().indexOf(key) != -1) {
+                                found = true;
+                            }
+                            break;
+                        case 'used_skill':
+                            if (item.stringUsedSkill().indexOf(key) != -1) {
+                                found = true;
+                            }
+                            break;
+                        case 'req_skill':
+                            if (item.stringReqSkill().indexOf(key) != -1) {
+                                found = true;
+                            }
+                            break;
+                        case 'req_quality':
+                            if (item.stringReqQuality().indexOf(key) != -1) {
+                                found = true;
+                            }
+                            break;
+                        case 'req_tool':
+                            if (item.stringReqTool().indexOf(key) != -1) {
+                                found = true;
+                            }
+                            break;
+                        default:
+                            break;
                     }
                     if (found) {
                         if (item.is_mod_item) {
-                            $('#search_result').append(
-                                '<a href=javascript:select_item("' + item.id + '")>[MOD]' + res + '</a><br>'
-                            );
+                            search_result += '<a href=javascript:select_item("' + item.id + '")>[MOD]' + res + '</a><br>';
                         } else {
-                            $('#search_result').append(
-                                '<a href=javascript:select_item("' + item.id + '")>' + res + '</a><br>'
-                            );
+                            search_result += '<a href=javascript:select_item("' + item.id + '")>' + res + '</a><br>';
                         }
                     }
                 }
+            }
+            $('#search_result').append(search_result);
+            const endTime = Date.now();
+            if (search.show_search_time.checked) {
+                $('#search_result').append(__('検索時間') + (endTime - startTime) + ' ms');
             }
         }
 

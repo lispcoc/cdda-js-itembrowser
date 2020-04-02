@@ -97,9 +97,11 @@ class RecipeClass extends GenericClass {
             }
 
             if (this.json.skills_required) {
-                this.skills_required = this.json.skills_required;
-                if (!Array.isArray(this.skills_required[0])) {
-                    this.skills_required = [this.skills_required];
+                if (Array.isArray(this.json.skills_required[0])) {
+                    this.skills_required = this.json.skills_required;
+                } else {
+                    this.skills_required = [];
+                    this.skills_required.push(this.json.skills_required);
                 }
             } else if (!this.skills_required) {
                 this.skills_required = [
@@ -253,7 +255,7 @@ class RecipeClass extends GenericClass {
                 res.push(t1);
             }
         }
-        console.log(res);
+        //console.log(res);
         return res;
     }
 
@@ -280,7 +282,6 @@ class RecipeClass extends GenericClass {
                 res.push(tmp_tools);
             }
         }
-        console.log(res);
         return res;
     }
 
@@ -309,7 +310,6 @@ class RecipeClass extends GenericClass {
                 res.push(tmp_components);
             }
         }
-        console.log(res);
         return res;
     }
 

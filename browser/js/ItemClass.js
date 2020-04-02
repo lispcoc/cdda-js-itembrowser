@@ -67,6 +67,8 @@ class ItemClass extends GenericClass {
             this.loadArmorData(this.json);
             this.loadGunData(this.json);
             this.loadBookData(this.json);
+
+            this.search_cache = {};
         }
     }
 
@@ -798,5 +800,143 @@ class ItemClass extends GenericClass {
             }
         }
         return string_html;
+    }
+
+    //
+    // Search related functions
+    //
+    stringQualities() {
+        if (isDefined(this.search_cache.str_qualities)) {
+            return this.search_cache.str_qualities;
+        }
+        var res = '';
+        for (var q of this.qualities) {
+            if (q[0]) {
+                var s = ToolqualityClass.searchData(q[0]);
+                if (s) {
+                    res += s.name;
+                } else {
+                    res += __(q[0]);
+                }
+            }
+        }
+        this.search_cache.str_qualities = res;
+        return res;
+    }
+
+    stringComponents() {
+        if (isDefined(this.search_cache.str_components)) {
+            return this.search_cache.str_components;
+        }
+        var res = '';
+        var cmp_names = {};
+        for (const r of RecipeClass.all_data) {
+            if (r.result == this.id) {
+                const cmps = r.getComponents();
+                for (const c1 of cmps) {
+                    for (const c2 of c1) {
+                        const it = ItemClass.searchData(c2[0]);
+                        cmp_names[it.name] = 1;
+                    }
+                }
+            }
+        }
+        for (const name in cmp_names) {
+            res += name;
+        }
+        this.search_cache.str_components = res;
+        return res;
+    }
+
+    stringUsedSkill() {
+        if (isDefined(this.search_cache.str_used_skill)) {
+            return this.search_cache.str_used_skill;
+        }
+        var res = '';
+        var cmp_names = {};
+        for (const r of RecipeClass.all_data) {
+            if (r.result == this.id) {
+                const s = SkillClass.searchData(r.getSkillUsed());
+                if (s) {
+                    cmp_names[s.name] = 1;
+                }
+            }
+        }
+        for (const name in cmp_names) {
+            res += name;
+        }
+        this.search_cache.str_used_skill = res;
+        return res;
+    }
+
+    stringReqSkill() {
+        if (isDefined(this.search_cache.str_req_skill)) {
+            return this.search_cache.str_req_skill;
+        }
+        var res = '';
+        var cmp_names = {};
+        for (const r of RecipeClass.all_data) {
+            if (r.result == this.id) {
+                for (const req of r.getSkillsRequired()) {
+                    const s = SkillClass.searchData(req[0]);
+                    if (s) {
+                        cmp_names[s.name] = 1;
+                    }
+                }
+            }
+        }
+        for (const name in cmp_names) {
+            res += name;
+        }
+        this.search_cache.str_req_skill = res;
+        return res;
+    }
+
+    stringReqQuality() {
+        if (isDefined(this.search_cache.str_req_quality)) {
+            return this.search_cache.str_req_quality;
+        }
+        var res = '';
+        var names = {};
+        for (const r of RecipeClass.all_data) {
+            if (r.result == this.id) {
+                for (const req of r.getQualities()) {
+                    const t = ToolqualityClass.searchData(req.id);
+                    if (t) {
+                        names[t.name] = 1;
+                    }
+                }
+            }
+        }
+        for (const name in names) {
+            res += name;
+        }
+        this.search_cache.str_req_quality = res;
+        return res;
+    }
+
+    stringReqTool() {
+        if (isDefined(this.search_cache.str_req_tool)) {
+            return this.search_cache.str_req_tool;
+        }
+        var res = '';
+        var names = {};
+        for (const r of RecipeClass.all_data) {
+            if (r.result == this.id) {
+                for (const req_set of r.getTools()) {
+                    for (const req of req_set) {
+                        const t = ItemClass.searchData(req[0]);
+                        if (t) {
+                            names[t.name] = 1;
+                        }
+                    }
+                }
+            }
+        }
+        for (const name in names) {
+            res += name;
+        }
+        this.search_cache.str_req_tool = res;
+        return res;
     }
 }
