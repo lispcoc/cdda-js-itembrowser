@@ -2,6 +2,7 @@
 
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Cataclysm: DDA Item Browser</title>
     <link rel="stylesheet" type="text/css" href="style.css" />
     <style>
         pre {
@@ -68,6 +69,8 @@
             $('#title_info').append('<a href=javascript:select_tab("ItemSearch")>' + Tr("アイテム検索") + '</a>');
             $('#title_info').append(' ');
             $('#title_info').append('<a href=javascript:select_tab("MeleeList")>' + Tr("近接武器リスト") + '</a>');
+            $('#title_info').append(' ');
+            $('#title_info').append('<a href="https://github.com/lispcoc/cdda-js-itembrowser" target="_blank">' + Tr("Github repository") + '</a>');
             $('#input_box').append('<div><input type="text" name="textbox" onkeyup="search_data()" placeholder=' + Tr("検索キーワードを入力してください") + '></div>');
             $(document).on("keypress", "input:not(.allow_submit)", function(event) {
                 return event.which != 13;
