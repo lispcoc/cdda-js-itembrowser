@@ -217,6 +217,10 @@ class RecipeClass extends GenericClass {
         return null;
     }
 
+    get reversible() {
+        return this.json.reversible ? this.json.reversible : false;
+    }
+
     getResult() {
         return this.result;
     }
@@ -413,6 +417,11 @@ class RecipeClass extends GenericClass {
             } else if (this.hasFlag("BLIND_HARD")) {
                 string_html += Tr("暗所制作: 困難") + "<br>";
             }
+        }
+        if (this.reversible) {
+            string_html += Tr("分解: ") + Tr("可能") + "<br>";
+        } else {
+            string_html += Tr("分解: ") + Tr("不可") + "<br>";
         }
         for (var q of this.getQualities()) {
             string_html += "&gt;";
