@@ -154,6 +154,8 @@ local items = {}
 local mod_items = {}
 local recipes = {}
 local mod_recipes = {}
+local uncrafts = {}
+local mod_uncrafts = {}
 local requirements = {}
 local mod_requirements = {}
 local materials = {}
@@ -240,6 +242,8 @@ while filepath do
           table.insert(overmap_terrains, translate_table(lang_data, val))
         elseif is_palette_type(type_val) then
           table.insert(palettes, translate_table(lang_data, val))
+        elseif type_val == "uncraft" then
+          table.insert(uncrafts, val)
         end
       end
     end
@@ -268,7 +272,16 @@ while filepath do
       for _, val in pairs(data) do
         if type(val) == "table" then
           if val["type"] == "MOD_INFO" then
-            mod_path[val["ident"]] = string.match(filepath, "(.+)[\\/]+modinfo.json$")
+            local id = nil
+            if val["id"] then
+              id = val["id"]
+            elseif val["ident"] then
+              -- old core
+              id = val["ident"]
+            end
+            if id then
+              mod_path[id] = string.match(filepath, "(.+)[\\/]+modinfo.json$")
+            end
           end
         end
       end
@@ -322,7 +335,9 @@ for _, mod_ident in pairs(valid_mod) do
                 table.insert(mod_tool_qualitys, new_val)
               elseif is_ammunition_type(type_val) then
                 new_val = translate_table(lang_data, val)
-                table.insert(mod_ammunition_types, new_val)		  
+                table.insert(mod_ammunition_types, new_val)
+              elseif type_val == "uncraft" then
+                table.insert(mod_uncrafts, val)
               end
             end
           end
@@ -351,6 +366,14 @@ io.write(";\n")
 
 io.write("var mod_recipes = ")
 io.write(json.encode(mod_recipes))
+io.write(";\n")
+
+io.write("var uncrafts = ")
+io.write(json.encode(uncrafts))
+io.write(";\n")
+
+io.write("var mod_uncrafts = ")
+io.write(json.encode(mod_uncrafts))
 io.write(";\n")
 
 io.write("var requirements = ")

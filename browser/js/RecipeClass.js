@@ -84,6 +84,28 @@ class RecipeClass extends GenericClass {
         return retval;
     }
 
+    static searchDataFromComponent(cmp_key) {
+        var list = {};
+        var retval = [];
+        console.log(cmp_key);
+        this.all_data.forEach(function(tmp) {
+            if (tmp.valid) {
+                tmp.getComponents().forEach(function(cmp_list) {
+                    for (var cmp of cmp_list) {
+                        if (cmp[0] == cmp_key) {
+                            list[tmp.id] = tmp;
+                            return;
+                        }
+                    }
+                })
+            }
+        });
+        for (var key in list) {
+            retval.push(list[key]);
+        }
+        return retval;
+    }
+
     init() {
         super.init();
 
@@ -212,7 +234,16 @@ class RecipeClass extends GenericClass {
     }
 
     getSkillsRequired() {
-        return this.skills_required
+        var ret = [];
+        for (const s of this.skills_required) {
+            if (s.length != 0) {
+                ret.push({
+                    "data": SkillClass.searchData(s[0]),
+                    "lv": s[1]
+                });
+            }
+        }
+        return ret;
     }
 
     getDifficulty() {
@@ -313,6 +344,18 @@ class RecipeClass extends GenericClass {
         return res;
     }
 
+    getComponentNum(item_id) {
+        var ret = 0;
+        for (const cmp_list of this.getComponents()) {
+            for (const cmp of cmp_list) {
+                if (cmp[0] == item_id) {
+                    ret += cmp[1];
+                }
+            }
+        }
+        return ret;
+    }
+
     getbatch_time_factors() {
         return this.batch_time_factors;
     }
@@ -329,6 +372,85 @@ class RecipeClass extends GenericClass {
         }
         return false;
     }
+
+    stringHtml(item_link_func = null) {
+        var string_html = "";
+        const dummy_func = function(name, id) { return a; }
+        var internal_item_link_func = item_link_func ? item_link_func : dummy_func;
+
+        console.log(this);
+        if (this.getSkillUsed() != "N/A") {
+            var s = SkillClass.searchData(this.getSkillUsed());
+            if (s) {
+                string_html += Tr("適用スキル") + ": " + s.name + "(" + this.getDifficulty() + ")<br>";
+            } else {
+                string_html += Tr("適用スキル") + ": " + Tr(this.getSkillUsed()) + "(" + this.getDifficulty() + ")<br>";
+            }
+        }
+        string_html += Tr("必要スキル") + ": ";
+        for (var s of this.getSkillsRequired()) {
+            string_html += s.data.name + "(" + s.lv + "), ";
+        }
+        string_html += "<br>";
+        if (this.getAutolearn() == true) {
+            string_html += Tr("このレシピは必要スキルを満たしたときに自動で習得します。") + "<br>";
+        }
+        for (var b of this.getBookLearn()) {
+            var item = ItemClass.searchData(b[0]);
+            string_html += Tr("$2 から適用スキルがレベル $1 で習得します。", b[1], link_to_item(item.name, item.id)) + "<br>";
+        }
+        string_html += Tr("完了まで") + ": " + (this.getTime()) + "<br>";
+        if (this.getbatch_time_factors()) {
+            for (var batch_time of this.getbatch_time_factors()) {
+                if (batch_time[0]) {
+                    string_html += Tr("$2 個以上作ると $1% の時間が減る。", batch_time[0], batch_time[1]) + "<br>";
+                }
+            }
+        }
+        if (this.getFlags()) {
+            if (this.hasFlag("BLIND_EASY")) {
+                string_html += Tr("暗所制作: 容易") + "<br>";
+            } else if (this.hasFlag("BLIND_HARD")) {
+                string_html += Tr("暗所制作: 困難") + "<br>";
+            }
+        }
+        for (var q of this.getQualities()) {
+            string_html += "&gt;";
+            var s = ToolqualityClass.searchData(q.id);
+            if (s) {
+                string_html += Tr("レベル $1 の $2 性能", q.level, s.name) + "<br>";
+            } else {
+                string_html += Tr("レベル $1 の $2 性能", q.level, Tr(q.id)) + "<br>";
+            }
+        }
+        for (var t of this.getTools()) {
+            string_html += "&gt;";
+            for (var i = 0; i < t.length; ++i) {
+                if (t[i][0]) {
+                    var item = ItemClass.searchData(t[i][0]);
+                    var charges = t[i][1];
+                    string_html += internal_item_link_func(item.name, item.id);
+                    string_html += charges != -1 ? Tr("(充填量: $1)", charges) : "";
+                    if (t.length - 1 > i) {
+                        string_html += Tr(" または ");
+                    } else {
+                        string_html += "<br>";
+                    }
+                }
+            }
+        }
+        for (var cmp_list of this.getComponents()) {
+            string_html += "&gt;";
+            var cmp_str_list = [];
+            for (var cmp of cmp_list) {
+                var item_data = ItemClass.searchData(cmp[0]);
+                cmp_str_list.push(internal_item_link_func(item_data.name, item_data.id) + " (" + this.getComponentNum(item_data.id) + ")");
+            }
+            string_html += cmp_str_list.join(Tr(" または ")) + "<br>";
+        }
+        return string_html;
+    }
+
 }
 
 class RecipeListClass {

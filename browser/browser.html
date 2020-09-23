@@ -60,6 +60,7 @@
     <script type="text/javascript" src="js/SkillClass.js"></script>
     <script type="text/javascript" src="js/ToolqualityClass.js"></script>
     <script type="text/javascript" src="js/AmmunitiontypeClass.js"></script>
+    <script type="text/javascript" src="js/UncraftClass.js"></script>
     <script type="text/javascript" src="js/Transrate.js"></script>
     <script type="text/javascript" src="js/json-syntaxHighlight.js"></script>
     <script type="text/javascript" src="js/lang/en.js"></script>
@@ -88,6 +89,9 @@
             $('#input_opt').append('<label><input type="checkbox" name="show_search_time">' + Tr('検索時間を表示') + '</label><br>');
             $('#input_opt').hide();
         });
+
+        var debug_test = false;
+
         var melee_list_cache = false;
         var item_history = [];
         var timer_search_input;
@@ -124,103 +128,63 @@
 
         function item_recipe_html(id) {
             var string_html = "<h3>" + Tr("レシピ") + "</h3>";
-            var recipe_list = new RecipeListClass(id);
-            string_html += "<p>";
-            if (!recipe_list.getRecipe(0)) {
-                string_html += Tr("レシピはありません。");
-            } else {
-                for (var recipe_num = 0; recipe_list.getRecipe(recipe_num); recipe_num++) {
-                    string_html += "<h4>" + Tr("レシピ") + (recipe_num + 1) + "</h4>";
-                    var recipe_data = recipe_list.getRecipe(recipe_num);
-                    if (recipe_data.getSkillUsed() != "N/A") {
-                        var s = SkillClass.searchData(recipe_data.getSkillUsed());
-                        if (s) {
-                            string_html += Tr("適用スキル") + ": " + s.name + "(" + recipe_data.getDifficulty() + ")<br>";
-                        } else {
-                            string_html += Tr("適用スキル") + ": " + Tr(recipe_data.getSkillUsed()) + "(" + recipe_data.getDifficulty() + ")<br>";
-                        }
-                    }
-                    string_html += Tr("必要スキル") + ": ";
-                    if (recipe_data.getSkillsRequired()) {
-                        for (var r of recipe_data.getSkillsRequired()) {
-                            if (r[0]) {
-                                var s = SkillClass.searchData(r[0]);
-                                if (s) {
-                                    string_html += s.name + "(" + r[1] + "), ";
-                                } else {
-                                    string_html += Tr(r[0]) + "(" + r[1] + "), ";
-                                }
-                            }
-                        }
-                    }
-                    string_html += "<br>";
-                    if (recipe_data.getAutolearn() == true) {
-                        string_html += Tr("このレシピは必要スキルを満たしたときに自動で習得します。") + "<br>";
-                    }
-                    console.log(recipe_data);
-                    for (var b of recipe_data.getBookLearn()) {
-                        var item = ItemClass.searchData(b[0]);
-                        string_html += Tr("$2 から適用スキルがレベル $1 で習得します。", b[1], link_to_item(item.name, item.id)) + "<br>";
-                    }
-                    string_html += "<br>";
-                    string_html += Tr("完了まで") + ": " + (recipe_data.getTime()) + "<br>";
-                    if (recipe_data.getbatch_time_factors()) {
-                        for (var batch_time of recipe_data.getbatch_time_factors()) {
-                            if (batch_time[0]) {
-                                string_html += Tr("$2 個以上作ると $1% の時間が減る。", batch_time[0], batch_time[1]) + "<br>";
-                            }
-                        }
-                    }
-                    if (recipe_data.getFlags()) {
-                        if (recipe_data.hasFlag("BLIND_EASY")) {
-                            string_html += Tr("暗所制作: 容易") + "<br>";
-                        } else if (recipe_data.hasFlag("BLIND_HARD")) {
-                            string_html += Tr("暗所制作: 困難") + "<br>";
-                        }
-                    }
-                    for (var q of recipe_data.getQualities()) {
-                        var s = ToolqualityClass.searchData(q.id);
-                        if (s) {
-                            string_html += Tr("レベル $1 の $2 性能", q.level, s.name) + "<br>";
-                        } else {
-                            string_html += Tr("レベル $1 の $2 性能", q.level, Tr(q.id)) + "<br>";
-                        }
-                    }
-                    for (var t of recipe_data.getTools()) {
-                        string_html += "&gt;";
-                        for (var i = 0; i < t.length; ++i) {
-                            if (t[i][0]) {
-                                var item = ItemClass.searchData(t[i][0]);
-                                var charges = t[i][1];
-                                string_html += link_to_item(item.name, item.id);
-                                string_html += charges != -1 ? Tr("(充填量: $1)", charges) : "";
-                                if (t.length - 1 > i) {
-                                    string_html += Tr(" または ");
-                                } else {
-                                    string_html += "<br>";
-                                }
-                            }
-                        }
-                    }
-                    for (var c of recipe_data.getComponents()) {
-                        string_html += "&gt;";
-                        for (var i = 0; i < c.length; ++i) {
-                            if (c[i][0]) {
-                                var item = ItemClass.searchData(c[i][0]);
-                                var charges = c[i][1];
-                                string_html += Tr("$1 個の $2", charges, link_to_item(item.name, item.id));
-                                if (c.length - 1 > i) {
-                                    string_html += Tr(" または ");
-                                } else {
-                                    string_html += "<br>";
-                                }
-                            }
-                        }
-                    }
 
+            var recipe_list = RecipeClass.searchDataFromResult(id);
+            if (recipe_list.length > 0) {
+                var i = 1;
+                string_html += "<details>";
+                string_html += "<summary>" + Tr("クリックで展開") + "</summary>";
+                for (const recipe of recipe_list) {
+                    string_html += "<h4>" + Tr("レシピ") + i + "</h4>";
+                    string_html += recipe.stringHtml(link_to_item);
+                    i++;
                 }
+                string_html += "</details>";
+            } else {
+                string_html += Tr("レシピはありません。");
             }
-            string_html += "</p>";
+
+            if (debug_test) {
+                // 表示に時間がかかるので一旦実装見送り
+                var recipe_rev_list = RecipeClass.searchDataFromComponent(id);
+                if (recipe_rev_list.length) {
+                    string_html += "<h3>" + Tr("レシピ (逆引き)") + "</h3>";
+                    var res = {};
+                    for (const recipe of recipe_rev_list) {
+                        const item_data = ItemClass.searchData(recipe.result);
+                        res[recipe.result] = link_to_item(item_data.name, recipe.result);
+                    }
+                    string_html += "<details>";
+                    string_html += "<summary>" + Tr("クリックで展開") + "</summary>";
+                    for (const key in res) {
+                        string_html += res[key] + "<br>";
+                    }
+                    string_html += "</details>";
+                }
+
+            }
+
+            var uncraft_list = UncraftClass.searchDataFromResult(id);
+            if (uncraft_list.length) {
+                string_html += "<h3>" + Tr("分解") + "</h3>";
+                string_html += "<p>";
+                for (var unc of uncraft_list) {
+                    string_html += unc.stringHtml(link_to_item);
+                }
+                string_html += "</p>";
+            }
+
+            var uncraft_rev_list = UncraftClass.searchDataFromComponent(id);
+            if (uncraft_rev_list.length) {
+                string_html += "<h3>" + Tr("分解 (逆引き)") + "</h3>";
+                string_html += "<details>";
+                string_html += "<summary>" + Tr("クリックで展開") + "</summary>";
+                for (var unc of uncraft_rev_list) {
+                    const item_data = ItemClass.searchData(unc.result);
+                    string_html += link_to_item(item_data.name, item_data.id) + " (" + unc.getComponentNum(id) + ")<br>";
+                }
+                string_html += "</details>";
+            }
             return string_html;
         }
 
@@ -231,7 +195,7 @@
             var recipe_list = new RecipeListClass(key);
             $('#item_info').append(item_data_html(key));
             $('#item_info').append(item_recipe_html(key));
-            $('#item_info').append('<a href=javascript:click_json("' + key + '")>' + "<h3>SHOW JSON</h3>" + '</a><br>');
+            $('#item_info').append(show_json(key));
 
             item_history.unshift([item_data.name, key]);
             if (item_history.length > 10) {
@@ -245,22 +209,23 @@
             }
         }
 
-        function click_json(key) {
+        function show_json(key) {
+            var string_html = "<h3>SHOW JSON</h3>"
             var item_data = ItemClass.searchData(key);
-            var recipe_list = new RecipeListClass(key);
-            $('#json_info').empty();
-            $('#json_info').append("<h4>Item</h3>");
-            $('#json_info').append(syntaxHighlight(item_data.getJson()));
-            $('#json_info').append("<h4>Recipes</h3>");
-            var i = 0;
-            r = recipe_list.getRecipe(i);
-            while (r) {
-                $('#json_info').append("Recipe" + (i + 1) + ":</p>");
-                $('#json_info').append(syntaxHighlight(r.getJson()));
-                $('#json_info').append("</p>");
+
+            string_html += "<details>";
+            string_html += "<summary>" + Tr("クリックで展開") + "</summary>";
+            string_html += "<h4>Item</h3>";
+            string_html += "<pre>" + syntaxHighlight(item_data.getJson()) + "</pre>";
+            string_html += "<h4>Recipes</h3>";
+            var i = 1;
+            for (const recipe of RecipeClass.searchDataFromResult(key)) {
+                string_html += "<p>Recipe" + i + "</p>";
+                string_html += "<pre>" + syntaxHighlight(recipe.getJson()) + "</pre>";
                 i++;
-                r = recipe_list.getRecipe(i);
             }
+            string_html += "</details>";
+            return string_html;
         }
 
         function search_data() {
@@ -368,6 +333,7 @@
             TechniqueClass.initAllData();
             RequirementClass.initAllData();
             RecipeClass.initAllData();
+            UncraftClass.initAllData();
             const endTime = Date.now();
             console.log("Time: " + (endTime - startTime) + " ms");
         });

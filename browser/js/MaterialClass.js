@@ -8,7 +8,14 @@ class MaterialClass extends GenericClass {
     }
 
     get id() {
-        return this.json.ident ? this.json.ident : null;
+        if (this.json.id) {
+            return this.json.id;
+        }
+        // old core
+        if (this.json.ident) {
+            return this.json.ident;
+        }
+        return null;
     }
 
     get name() {

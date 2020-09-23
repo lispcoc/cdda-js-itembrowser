@@ -77,3 +77,11 @@ th.headerSortUp {
 th.headerSortDown {
     background-image: url(img/white-desc.gif);
 }
+
+p {
+    padding-left: 1em;
+}
+
+details {
+    padding-left: 1em;
+}

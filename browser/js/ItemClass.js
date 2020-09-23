@@ -294,7 +294,13 @@ class ItemClass extends GenericClass {
 
     get name() {
         if (!isString(this.basic_data.name)) {
-            return __(this.basic_data.name.str);
+            if (this.basic_data.name.str_sp) {
+                return __(this.basic_data.name.str_sp);
+            }
+            if (this.basic_data.name.str) {
+                return __(this.basic_data.name.str);
+            }
+            return __("No name");
         }
         return __(this.basic_data.name);
     }
@@ -321,6 +327,10 @@ class ItemClass extends GenericClass {
 
     getWeight() {
         return this.basic_data.weight;
+    }
+
+    getWeightInKg() {
+        return this.basic_data.weight / 1000;
     }
 
     get bashing() {
@@ -411,7 +421,7 @@ class ItemClass extends GenericClass {
         string_html += "<p>";
         string_html += "id: " + this.id + "<br>";
         string_html += Tr("容積") + ": " + this.getVolume() * 0.25 + " L<br>";
-        string_html += Tr("重量") + ": " + this.getWeight() * 0.001 + " kg<br>";
+        string_html += Tr("重量") + ": " + this.getWeightInKg() + " kg<br>";
         string_html += Tr("打撃") + ": " + this.bashing + " ";
         if (this.hasFlag("STAB") || this.hasFlag("SPEAR")) {
             string_html += Tr("刺撃") + ": " + this.cutting + " ";
@@ -877,11 +887,8 @@ class ItemClass extends GenericClass {
         var cmp_names = {};
         for (const r of RecipeClass.all_data) {
             if (r.result == this.id) {
-                for (const req of r.getSkillsRequired()) {
-                    const s = SkillClass.searchData(req[0]);
-                    if (s) {
-                        cmp_names[s.name] = 1;
-                    }
+                for (const s of r.getSkillsRequired()) {
+                    cmp_names[s.data.name] = 1;
                 }
             }
         }
