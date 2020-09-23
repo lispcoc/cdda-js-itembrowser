@@ -221,6 +221,14 @@ class RecipeClass extends GenericClass {
         return this.json.reversible ? this.json.reversible : false;
     }
 
+    isRecipe() {
+        return this.json.type == "recipe";
+    }
+
+    isUncraft() {
+        return this.json.type == "uncraft";
+    }
+
     getResult() {
         return this.result;
     }
@@ -391,17 +399,31 @@ class RecipeClass extends GenericClass {
                 string_html += Tr("適用スキル") + ": " + Tr(this.getSkillUsed()) + "(" + this.getDifficulty() + ")<br>";
             }
         }
-        string_html += Tr("必要スキル") + ": ";
-        for (var s of this.getSkillsRequired()) {
-            string_html += s.data.name + "(" + s.lv + "), ";
-        }
-        string_html += "<br>";
-        if (this.getAutolearn() == true) {
-            string_html += Tr("このレシピは必要スキルを満たしたときに自動で習得します。") + "<br>";
-        }
-        for (var b of this.getBookLearn()) {
-            var item = ItemClass.searchData(b[0]);
-            string_html += Tr("$2 から適用スキルがレベル $1 で習得します。", b[1], link_to_item(item.name, item.id)) + "<br>";
+        if (this.isRecipe()) {
+            string_html += Tr("必要スキル") + ": ";
+            for (var s of this.getSkillsRequired()) {
+                string_html += s.data.name + "(" + s.lv + "), ";
+            }
+            string_html += "<br>";
+            if (this.getAutolearn() == true) {
+                string_html += Tr("このレシピは必要スキルを満たしたときに自動で習得します。") + "<br>";
+            }
+            for (var b of this.getBookLearn()) {
+                var item = ItemClass.searchData(b[0]);
+                string_html += Tr("$2 から適用スキルがレベル $1 で習得します。", b[1], link_to_item(item.name, item.id)) + "<br>";
+            }
+            if (this.getFlags()) {
+                if (this.hasFlag("BLIND_EASY")) {
+                    string_html += Tr("暗所制作: 容易") + "<br>";
+                } else if (this.hasFlag("BLIND_HARD")) {
+                    string_html += Tr("暗所制作: 困難") + "<br>";
+                }
+            }
+            if (this.reversible) {
+                string_html += Tr("分解: ") + Tr("可能") + "<br>";
+            } else {
+                string_html += Tr("分解: ") + Tr("不可") + "<br>";
+            }
         }
         string_html += Tr("完了まで") + ": " + (this.getTime()) + "<br>";
         if (this.getbatch_time_factors()) {
@@ -410,18 +432,6 @@ class RecipeClass extends GenericClass {
                     string_html += Tr("$2 個以上作ると $1% の時間が減る。", batch_time[0], batch_time[1]) + "<br>";
                 }
             }
-        }
-        if (this.getFlags()) {
-            if (this.hasFlag("BLIND_EASY")) {
-                string_html += Tr("暗所制作: 容易") + "<br>";
-            } else if (this.hasFlag("BLIND_HARD")) {
-                string_html += Tr("暗所制作: 困難") + "<br>";
-            }
-        }
-        if (this.reversible) {
-            string_html += Tr("分解: ") + Tr("可能") + "<br>";
-        } else {
-            string_html += Tr("分解: ") + Tr("不可") + "<br>";
         }
         for (var q of this.getQualities()) {
             string_html += "&gt;";

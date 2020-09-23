@@ -165,11 +165,13 @@
             }
 
             var uncraft_list = UncraftClass.searchDataFromResult(id);
-            if (uncraft_list.length) {
+            if (uncraft_list.find(unc => unc.isUncraft())) {
                 string_html += "<h3>" + Tr("分解") + "</h3>";
                 string_html += "<p>";
                 for (var unc of uncraft_list) {
-                    string_html += unc.stringHtml(link_to_item);
+                    if (unc.isUncraft()) {
+                        string_html += unc.stringHtml(link_to_item);
+                    }
                 }
                 string_html += "</p>";
             }

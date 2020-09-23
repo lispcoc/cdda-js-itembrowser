@@ -10,7 +10,7 @@ class UncraftClass extends RecipeClass {
     init() {
         super.init();
 
-        if (this.json.type == "recipe" && !this.reversible) {
+        if (this.isRecipe() && !this.reversible) {
             this.valid = false;
         }
     }
