@@ -12,6 +12,9 @@ Javascriptで動作するため、専用のサーバーなどは不要、ロー�
 対応OSは現在のところWindows 10のみです。Linux/OS Xは未対応。<br>
 ブラウザはGoogle Chromeで動作確認しています。
 
+## CDDAバージョン
+0.E-b11026で確認。
+
 ## 使い方
 1. 以下URLよりファイルをダウンロードします。<br>
 https://github.com/lispcoc/cdda-js-itembrowser/archive/master.zip
